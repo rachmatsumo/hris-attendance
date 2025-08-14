@@ -1,0 +1,62 @@
+<?php
+// app/Models/WorkSchedule.php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
+class WorkSchedule extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'user_id',
+        'day_of_week',
+        'start_time',
+        'end_time',
+        'break_start_time',
+        'break_end_time',
+        'late_tolerance_minutes',
+        'is_active'
+    ];
+
+    protected $casts = [
+        'start_time' => 'datetime:H:i:s',
+        'end_time' => 'datetime:H:i:s',
+        'break_start_time' => 'datetime:H:i:s',
+        'break_end_time' => 'datetime:H:i:s',
+        'is_active' => 'boolean',
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    public function scopeForDay($query, $dayOfWeek)
+    {
+        return $query->where('day_of_week', $dayOfWeek);
+    }
+
+    // Get day name
+    public function getDayNameAttribute()
+    {
+        $days = [
+            1 => 'Monday',
+            2 => 'Tuesday', 
+            3 => 'Wednesday',
+            4 => 'Thursday',
+            5 => 'Friday',
+            6 => 'Saturday',
+            7 => 'Sunday'
+        ];
+        
+        return $days[$this->day_of_week] ?? '';
+    }
+}
