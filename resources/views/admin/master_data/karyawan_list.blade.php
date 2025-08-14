@@ -22,8 +22,8 @@
                             <thead>
                                 <tr>
                                     <th class="v-middle">Nama</th>
-                                    <th class="v-middle">Position</th>
-                                    <th class="v-middle">Department</th>
+                                    <th class="v-middle">Jabatan</th>
+                                    <th class="v-middle">Divisi</th>
                                     <th class="v-middle">Option</th>
                                 </tr>
                             </thead>

@@ -15,13 +15,13 @@
                         <a class="btn btn-light" href="#"><i class="bi bi-plus"></i></a>
                     </div>
                     <div class="d-flex justify-content-between align-items-center w-100 border-bottom py-2">
-                        <h6>Department</h6>
+                        <h6>Daftar Divisi</h6>
                     </div>
                     <div class="table-responsive">
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th class="v-middle">Nama Department</th>
+                                    <th class="v-middle">Nama Divisi</th>
                                     <th class="v-middle">Code</th>
                                     <th class="v-middle">Option</th>
                                 </tr>

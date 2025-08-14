@@ -15,15 +15,15 @@
                         <a class="btn btn-light" href="#"><i class="bi bi-plus"></i></a>
                     </div>
                     <div class="d-flex justify-content-between align-items-center w-100 border-bottom py-2">
-                        <h6>Position</h6>
+                        <h6>Daftar Jabatan</h6>
                     </div>
                     <div class="table-responsive">
                         <table class="table">
                             <thead>
                                 <tr> 
-                                    <th class="v-middle">Position</th>
-                                    <th class="v-middle">Department</th>
-                                    <th class="v-middle">Salary</th>
+                                    <th class="v-middle">Jabatan</th>
+                                    <th class="v-middle">Divisi</th>
+                                    <th class="v-middle">THP</th>
                                     <th class="v-middle">Option</th>
                                 </tr>
                             </thead>
