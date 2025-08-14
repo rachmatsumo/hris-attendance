@@ -42,10 +42,28 @@ class User extends Authenticatable
     ];
 
     // Relationships
+
+    public function position()
+    {
+        return $this->belongsTo(Position::class);
+    }
+
     public function department()
     {
-        return $this->belongsTo(Department::class);
+        return $this->hasOneThrough(
+            Department::class,
+            Position::class,
+            'id',            // Foreign key di positions yang menghubungkan ke user
+            'id',            // Foreign key di departments yang menghubungkan ke position
+            'position_id',   // Local key di users
+            'department_id'  // Local key di positions
+        );
     }
+
+    // public function department()
+    // {
+    //     return $this->belongsTo(Department::class);
+    // }
 
     public function workSchedules()
     {

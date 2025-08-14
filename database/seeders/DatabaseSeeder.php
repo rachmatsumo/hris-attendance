@@ -25,7 +25,8 @@ class DatabaseSeeder extends Seeder
             // WorkScheduleSeeder::class,
             // HolidaySeeder::class,
             // SettingSeeder::class,
-            LocationSeeder::class,
+            // LocationSeeder::class,
+            PositionSeeder::class,
         ]);
     }
 }

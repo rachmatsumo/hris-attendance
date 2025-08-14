@@ -26,9 +26,9 @@ class Department extends Model
         'is_active' => 'boolean',
     ];
 
-    public function users()
+    public function positions()
     {
-        return $this->hasMany(User::class);
+        return $this->hasMany(Position::class);
     }
 
     public function scopeActive($query)

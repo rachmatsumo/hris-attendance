@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AttendancePermitController;
 use App\Http\Controllers\LeaveRequestController;
@@ -26,9 +27,20 @@ Route::middleware('auth')->group(function () {
     // Route::get('/akun', [AkunController::class, 'edit'])->name('akun.edit');
     // Route::patch('/akun', [AkunController::class, 'update'])->name('akun.update');
     // Route::delete('/akun', [AkunController::class, 'destroy'])->name('akun.destroy');
-    Route::resource('account', AccountController::class)->only(['index', 'store', 'edit', 'update']);
-
+    Route::resource('account', AccountController::class)->only(['update']);
+    Route::get('account/menu', [AccountController::class, 'index'])->name('account.index');
+    Route::get('account/edit', [AccountController::class, 'edit'])->name('account.edit');
     Route::get('account/change-password', [AccountController::class, 'changePassword'])->name('account.change-password');
+    
+    Route::get('/admin/menu', [AdminController::class, 'index'])->name('admin.index');
+    Route::get('/admin/department', [AdminController::class, 'departmentList'])->name('admin.department');
+    Route::get('/admin/position', [AdminController::class, 'positionList'])->name('admin.position');
+    Route::get('/admin/karyawan', [AdminController::class, 'karyawanList'])->name('admin.karyawan');
+    Route::get('/admin/setting', [AdminController::class, 'settings'])->name('admin.setting');
+    
+    Route::get('/admin/rekap-absensi', [AdminController::class, 'rekapAbsensi'])->name('admin.rekap-absensi');
+    Route::get('/admin/jadwal-kerja', [AdminController::class, 'jadwalKerja'])->name('admin.jadwal-kerja');
+    Route::get('/admin/payroll', [AdminController::class, 'payroll'])->name('admin.payroll');
     
     // Absensi
     Route::resource('attendances', AttendanceController::class)->only(['index', 'store', 'update']);

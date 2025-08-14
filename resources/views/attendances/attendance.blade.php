@@ -59,7 +59,9 @@
                 </tbody>
             </table>
         </div>
-
+        <div class="pagination justify-content-center mt-3"> 
+            {{ $attendances->links('pagination::bootstrap-5') }}
+        </div>
     </div>
 
 </div>
@@ -75,7 +77,7 @@
             <div class="modal-body">
                 <p id="modalText"></p>
 
-                @if($schedule->is_location_limited)
+                @if($schedule?->is_location_limited)
                     <div id="map" style="height:300px;" class="mb-3"></div>
                     <input type="hidden" id="location_lat_long" name="location_lat_long">
                     <p class="small text-muted">Pastikan Anda berada di lokasi yang ditentukan.</p>
@@ -140,7 +142,7 @@
         const confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
         confirmModal.show();
 
-        @if($schedule->is_location_limited)
+        @if($schedule?->is_location_limited)
         document.getElementById('confirmModal').addEventListener('shown.bs.modal', function () {
             initMap();
         }, { once: true });
@@ -223,7 +225,7 @@
         typeInput.value = selectedType;
         form.appendChild(typeInput);
 
-        @if($schedule->is_location_limited)
+        @if($schedule?->is_location_limited)
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(pos => {
                 let locInput = document.createElement('input');
@@ -255,7 +257,7 @@
         }
     });
 
-@if($schedule->is_location_limited)
+@if($schedule?->is_location_limited)
 function initMap(){
     const mapDiv=document.getElementById('map');
     if(map){ map.remove(); map=null; }

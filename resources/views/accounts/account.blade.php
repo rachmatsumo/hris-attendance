@@ -8,7 +8,7 @@
         
         <ul class="menu-list">
             <li>
-                <a href="{{ route('account.edit', Auth::user()->id) }}">
+                <a href="{{ route('account.edit') }}">
                     <div>
                         <span class="mb-0"><i class="bi bi-person-circle mb-0"></i></span> Perbarui Profile
                     </div>
@@ -22,9 +22,9 @@
                     </div>
                     <i class="bi bi-chevron-compact-right"></i>
                 </a>
-            </li>
-            <li> 
-                
+            </li> 
+            
+            <li class="mt-5"> 
                 <a class="logout" href="{{ route('logout') }}"
                 onclick="event.preventDefault();
                                     document.getElementById('logout-form').submit();">

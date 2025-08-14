@@ -129,6 +129,9 @@
         .menu-list a.logout {
             color: red;
         }
+        /* .pagination span{
+            display: none!important;
+        } */
     </style>
 </head>
 <body>
@@ -142,7 +145,7 @@
                 <div class="d-flex justify-content-between py-2 w-100">
                     <div class="d-flex flex-column">
                         <h4>{{ @Auth::user()->name }}</h4>
-                        <span class="fs-7">{{ @Auth::user()->department->name }}</span>
+                        <span class="fs-7">{{ @Auth::user()->position->name }} - {{ Auth::user()->department->name }}</span>
                     </div>
                     <img src="{{ @Auth::user()->profile_photo 
                         ? asset('upload/avatar/' . @Auth::user()->profile_photo) 
@@ -169,6 +172,15 @@
                     <i class="bi bi-person-check-fill"></i>
                     <span>Izin</span>
                 </a>
+                
+                @if(Auth::user()->role=='admin' || Auth::user()->role=='hr') 
+                    <a href="{{ route('admin.index') }}" 
+                    class="nav-link {{ request()->routeIs('admin.*') ? 'active' : '' }}">
+                        <i class="bi bi-device-hdd"></i>
+                        <span>Admin</span>
+                    </a>
+                @endif
+
                 <a href="{{ route('account.index') }}" 
                 class="nav-link {{ request()->routeIs('account.*') ? 'active' : '' }}">
                     <i class="bi bi-person-circle"></i>

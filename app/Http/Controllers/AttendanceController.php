@@ -16,10 +16,13 @@ class AttendanceController extends Controller
         $attendances = Attendance::with('workSchedule')
             ->where('user_id', Auth::id())
             ->orderBy('date', 'desc')
-            ->paginate(20); 
+            ->orderBy('date', 'desc')
+            ->limit(15)
+            ->paginate(5);
 
         $schedule = WorkSchedule::where('user_id', Auth::id())
             ->where('day_of_week', now()->dayOfWeek)
+            ->where('is_active', true)
             ->first();
 
         $locations = Location::where('is_active', true)->get();
@@ -47,6 +50,7 @@ class AttendanceController extends Controller
         // Status dan late
         $schedule = WorkSchedule::where('user_id', Auth::id())
             ->where('day_of_week', now()->dayOfWeek)
+            ->where('is_active', true)
             ->first();
 
             // Ambil lokasi pengguna
@@ -73,7 +77,7 @@ class AttendanceController extends Controller
 
         // dd($schedule, $isWithinRadius, $userLat, $userLng);
 
-        if($schedule->is_location_limited === 0){
+        if($schedule?->is_location_limited === 0){
             $isWithinRadius = true; // Jika lokasi tidak dibatasi, set ke true
         }
 
@@ -95,12 +99,12 @@ class AttendanceController extends Controller
                     $attendance->late_minutes = 0;
                 }
             } else {
-                $attendance->status = 'present';
+                $attendance->status = 'overtime';
                 $attendance->late_minutes = 0;
             }
         }
 
-        if ($type === 'clock_out_time' && !$attendance->clock_out_time) {
+        if ($type === 'clock_out_time') {
             $attendance->clock_out_time = now();
             $attendance->clock_out_photo = $this->savePhoto($request->photo);
             $attendance->clock_out_lat = $userLat;
