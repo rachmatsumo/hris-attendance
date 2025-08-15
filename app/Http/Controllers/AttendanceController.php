@@ -90,7 +90,9 @@ class AttendanceController extends Controller
 
             if ($schedule) {
                 $scheduledStart = Carbon::parse($schedule->start_time);
-                $toleranceTime = $scheduledStart->copy()->addMinutes($schedule->late_tolerance_minutes ?? 0);
+                $toleranceTime = $scheduledStart->copy()->addMinutes(
+                    (int) ($schedule->late_tolerance_minutes ?? 0)
+                );
                 if (Carbon::parse($attendance->clock_in_time)->greaterThan($toleranceTime)) {
                     $attendance->status = 'late';
                     $attendance->late_minutes = Carbon::parse($attendance->clock_in_time)->diffInMinutes($scheduledStart);
