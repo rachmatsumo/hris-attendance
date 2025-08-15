@@ -22,3 +22,18 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Ignore semua isi attendance
+/public/upload/attendance/*
+
+# Ignore semua isi avatar
+/public/upload/avatar/*
+
+# KECUALI folder thumbnails
+!/public/upload/avatar/thumbnails/
+
+# Ignore semua isi di thumbnails
+/public/upload/avatar/thumbnails/*
+
+# KECUALI default.png di thumbnails
+!/public/upload/avatar/thumbnails/default.png
