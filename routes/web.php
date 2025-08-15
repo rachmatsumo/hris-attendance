@@ -23,10 +23,6 @@ Route::get('/home', function () {
 
 Route::middleware('auth')->group(function () {
 
-    // Route::get('/akun', [AkunController::class, 'index'])->name('akun.index');
-    // Route::get('/akun', [AkunController::class, 'edit'])->name('akun.edit');
-    // Route::patch('/akun', [AkunController::class, 'update'])->name('akun.update');
-    // Route::delete('/akun', [AkunController::class, 'destroy'])->name('akun.destroy');
     Route::resource('account', AccountController::class)->only(['update']);
     Route::get('account/menu', [AccountController::class, 'index'])->name('account.index');
     Route::get('account/edit', [AccountController::class, 'edit'])->name('account.edit');

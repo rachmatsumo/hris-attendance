@@ -22,7 +22,7 @@
                             <thead>
                                 <tr>
                                     <th class="v-middle">Nama Lokasi</th>
-                                    <th class="v-middle">Lat-Lng</th>
+                                    <th class="v-middle">Koordinat</th>
                                     <th class="v-middle">Radius</th> 
                                     <th class="v-middle">Option</th>
                                 </tr>
@@ -32,7 +32,7 @@
                                 <tr>
                                     <td class="v-middle">{{ $a->name }}</td>
                                     <td class="v-middle">{{ $a->lat_long }}</td>
-                                    <td class="v-middle">{{ $a->radius }} km</td> 
+                                    <td class="v-middle">{{ $a->radius }}km</td> 
                                     <td></td> 
                                 </tr>
                                 @endforeach
