@@ -59,4 +59,30 @@ class WorkSchedule extends Model
         
         return $days[$this->day_of_week] ?? '';
     }
+
+    public function getDayOfWeekNameAttribute($lang)
+    {
+        $days = [
+            1 => 'Senin',
+            2 => 'Selasa',
+            3 => 'Rabu',
+            4 => 'Kamis',
+            5 => 'Jumat',
+            6 => 'Sabtu',
+            7 => 'Minggu',
+        ];
+
+        return $days[$this->day_of_week] ?? null;
+    }
+
+    public function getStartTimeFormattedAttribute()
+    {
+        return \Carbon\Carbon::parse($this->start_time)->format('H:i');
+    }
+
+    public function getEndTimeFormattedAttribute()
+    {
+        return \Carbon\Carbon::parse($this->end_time)->format('H:i');
+    }
+
 }

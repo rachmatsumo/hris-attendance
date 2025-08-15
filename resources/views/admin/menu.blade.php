@@ -8,7 +8,7 @@
                 <h6 class="ms-3">Master Data</h6>
             </span>
             <li>
-                <a href="{{ route('admin.position') }}">
+                <a href="{{ route('admin.work-location') }}">
                     <div>
                         <span class="mb-0"><i class="bi bi-map mb-0"></i></span> Area Kerja
                     </div>
@@ -32,7 +32,7 @@
                 </a>
             </li>
             <li>
-                <a href="{{ route('admin.karyawan') }}">
+                <a href="{{ route('admin.employee') }}">
                     <div>
                         <span class="mb-0"><i class="bi bi-people mb-0"></i></span> Daftar Karyawan
                     </div>
@@ -40,7 +40,7 @@
                 </a>
             </li> 
             <li>
-                <a href="{{ route('admin.karyawan') }}">
+                <a href="{{ route('admin.holiday') }}">
                     <div>
                         <span class="mb-0"><i class="bi bi-calendar-date mb-0"></i></span> Hari Libur
                     </div>
@@ -62,7 +62,7 @@
                   <h6 class="ms-3">Resource Management</h6>
             </span>
             <li>
-                <a href="{{ route('admin.jadwal-kerja') }}">
+                <a href="{{ route('admin.work-schedule') }}">
                     <div>
                         <span class="mb-0"><i class="bi bi-calendar-week mb-0"></i></span> Jadwal Kerja
                     </div>
@@ -78,7 +78,7 @@
                 </a>
             </li> 
             <li>
-                <a href="{{ route('admin.rekap-absensi') }}">
+                <a href="{{ route('admin.recap-attendance') }}">
                     <div>
                         <span class="mb-0"><i class="bi bi-folder2-open mb-0"></i></span> Rekap Absensi
                     </div>

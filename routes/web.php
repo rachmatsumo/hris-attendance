@@ -35,11 +35,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/admin/menu', [AdminController::class, 'index'])->name('admin.index');
     Route::get('/admin/department', [AdminController::class, 'departmentList'])->name('admin.department');
     Route::get('/admin/position', [AdminController::class, 'positionList'])->name('admin.position');
-    Route::get('/admin/karyawan', [AdminController::class, 'karyawanList'])->name('admin.karyawan');
+    Route::get('/admin/employee', [AdminController::class, 'employeeList'])->name('admin.employee');
+    Route::get('/admin/holiday', [AdminController::class, 'holidayList'])->name('admin.holiday');
     Route::get('/admin/setting', [AdminController::class, 'settings'])->name('admin.setting');
+    Route::get('/admin/work-location', [AdminController::class, 'workLocation'])->name('admin.work-location');
     
-    Route::get('/admin/rekap-absensi', [AdminController::class, 'rekapAbsensi'])->name('admin.rekap-absensi');
-    Route::get('/admin/jadwal-kerja', [AdminController::class, 'jadwalKerja'])->name('admin.jadwal-kerja');
+    Route::get('/admin/recap-attendance', [AdminController::class, 'recapAttendance'])->name('admin.recap-attendance');
+    Route::get('/admin/work-schedule', [AdminController::class, 'workSchedule'])->name('admin.work-schedule');
     Route::get('/admin/payroll', [AdminController::class, 'payroll'])->name('admin.payroll');
     
     // Absensi

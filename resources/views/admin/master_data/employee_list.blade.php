@@ -5,7 +5,7 @@
   <div class="row justify-content-center">
         <div class="col-md-12 col-lg-12">
             <div class="card shadow-sm">
-            <div class="card-body">
+                <div class="card-body">
 
                     {{-- Tombol Back di atas --}}
                     <div class="mb-3 d-flex justify-content-between align-items-center">
@@ -15,24 +15,24 @@
                         <a class="btn btn-light" href="#"><i class="bi bi-plus"></i></a>
                     </div>
                     <div class="d-flex justify-content-between align-items-center w-100 border-bottom py-2">
-                        <h6>Daftar Jabatan</h6>
+                        <h6>Karyawan</h6>
                     </div>
                     <div class="table-responsive">
                         <table class="table">
                             <thead>
-                                <tr> 
+                                <tr>
+                                    <th class="v-middle">Nama</th>
                                     <th class="v-middle">Jabatan</th>
                                     <th class="v-middle">Divisi</th>
-                                    <th class="v-middle">THP</th>
                                     <th class="v-middle">Option</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($positions as $a)
-                                <tr> 
+                                @foreach($employees as $a)
+                                <tr>
                                     <td class="v-middle">{{ $a->name }}</td>
+                                    <td class="v-middle">{{ $a->position->name }}</td>
                                     <td class="v-middle">{{ $a->department->name }}</td>
-                                    <td class="v-middle">{{ number_format(optional($a->salary)->net_salary) }}</td>
                                     <td></td> 
                                 </tr>
                                 @endforeach
@@ -40,7 +40,7 @@
                         </table>
                     </div>
                     <div class="pagination justify-content-center mt-3"> 
-                        {{ $positions->links('pagination::bootstrap-5') }}
+                        {{ $employees->links('pagination::bootstrap-5') }}
                     </div>
                 
                 </div>

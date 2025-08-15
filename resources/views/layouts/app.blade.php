@@ -137,7 +137,7 @@
 <body>
     <div id="app">
         <nav class="navbar navbar-top navbar-expand-md navbar-light bg-gradient-blue border-none">
-            <div class="container flex-column align-items-start">
+            <div class="container-fluid px-4 flex-column align-items-start">
                 <a class="navbar-brand text-white fs-6 mb-2" href="{{ url('/') }}">
                     {{ config('app.name', 'Laravel') }}
                 </a>
