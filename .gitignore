@@ -23,8 +23,8 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 
-# Ignore semua isi attendance
 /public/upload/attendance/*
+!/public/upload/attendance/.gitkeep
 
 # Ignore semua isi avatar
 /public/upload/avatar/*
