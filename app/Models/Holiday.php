@@ -19,8 +19,8 @@ class Holiday extends Model
     ];
 
     protected $casts = [
-        'date' => 'date',
-        'is_active' => 'boolean',
+        // 'date' => 'date',
+        // 'is_active' => 'boolean',
     ];
 
     public function scopeActive($query)

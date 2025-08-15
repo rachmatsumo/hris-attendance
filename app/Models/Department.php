@@ -10,6 +10,8 @@ class Department extends Model
 {
     use HasFactory;
 
+    protected $table = 'departments';
+
     protected $fillable = [
         'name',
         'code',
@@ -23,7 +25,7 @@ class Department extends Model
     protected $casts = [
         'location_lat' => 'decimal:8',
         'location_lng' => 'decimal:8',
-        'is_active' => 'boolean',
+        // 'is_active' => 'boolean',
     ];
 
     public function positions()

@@ -9,6 +9,13 @@ class Position extends Model
     use HasFactory;
 
     protected $table = 'positions';
+
+    protected $fillable = [
+        'name',
+        'department_id',
+        'code',
+        'is_active',
+    ];
     
     public function users()
     {

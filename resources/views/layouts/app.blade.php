@@ -22,6 +22,7 @@
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js" integrity="sha256-kmHvs0B+OpCW5GVHUNjv9rOmY0IvSIRcf7zGUDTDQM8=" crossorigin="anonymous"></script>
 </head>
 <body>
      <div id="loader-overlay">
@@ -106,6 +107,16 @@
                     </div>
                 @endif
 
+                @if ($errors->any())
+                    <div class="alert alert-danger flash-message">
+                        <ul>
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 @yield('content')
             </div>
         </main>
@@ -141,5 +152,24 @@
             }
         });
     </script> 
+
+    <script>
+        $(document).on('click', '.openModalInputBtn', function(e) {
+            var form = document.getElementById('inputForm');
+            var id = $(this).attr('data-id');
+            var url = $(this).attr('data-url');
+            var method = $(this).attr('method');
+            var title = $(this).attr('title');
+
+            console.log(url, method, title);
+            $('#modalInput .modal-title').text(title);
+
+            if(method=='post'){
+                form.reset();
+                $('#modalInput form').attr('action', url);
+                $('#methodField').html('');
+            } 
+        });
+    </script>
 </body>
 </html>
