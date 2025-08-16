@@ -9,22 +9,37 @@
             @csrf
             <input type="hidden" id="photoData" name="photo" required>
             
-            <div class="row w-100 border-bottom mb-2">
+            <div class="w-100 border-bottom mb-2">
                 <div class="col-12 d-flex justify-content-between mb-3">
                     <div><b>Jadwal Kerja</b></div>
-                    <div class="text-end">{{ now()->locale('id')->translatedFormat('D, d M Y') }}</div>
+                    <div class="text-end">{{ \Carbon\Carbon::parse($activeShift?->work_date)->locale('id')->translatedFormat('D, d M Y') }}</div>
                 </div>
-                <div class="mb-3 text-center">
+                <div class="mb-3 text-center p-0">
                     <h1>
-                        {{ optional($schedule)->start_time ? \Carbon\Carbon::parse($schedule->start_time)->format('H:i') : '-' }}
+                        {{ optional($activeShift?->workingTime)->start_time ? \Carbon\Carbon::parse($activeShift?->workingTime->start_time)->format('H:i') : '-' }}
                         -
-                        {{ optional($schedule)->end_time ? \Carbon\Carbon::parse($schedule->end_time)->format('H:i') : '-' }}
+                        {{ optional($activeShift?->workingTime)->end_time ? \Carbon\Carbon::parse($activeShift?->workingTime->end_time)->format('H:i') : '-' }}
                     </h1>
+                    <span>{{ $activeShift?->workingTime?->name }} - {{ $activeShift?->workingTime?->code }}</span>
                 </div>
             </div>
             <div class="d-flex flex-row justify-content-between mt-2">
-                <button type="button" class="btn btn-lg btn-primary me-2 rounded-1 w-50" onclick="openConfirmModal('clock_in_time')">Masuk</button>
-                <button type="button" class="btn btn-lg btn-light ms-2 rounded-1 w-50" onclick="openConfirmModal('clock_out_time')">Pulang</button>
+                <button type="button" 
+                        class="btn btn-lg btn-primary me-2 rounded-1 w-50" 
+                        id="btnClockIn"
+                        data-start="{{ $clockInWindow['start'] ?? '' }}"
+                        data-end="{{ $clockInWindow['end'] ?? '' }}"
+                        onclick="openConfirmModal('clock_in_time')">
+                    Masuk
+                </button>
+                <button type="button" 
+                        class="btn btn-lg btn-light ms-2 rounded-1 w-50" 
+                        id="btnClockOut"
+                        data-start="{{ $clockOutWindow['start'] ?? '' }}"
+                        data-end="{{ $clockOutWindow['end'] ?? '' }}"
+                        onclick="openConfirmModal('clock_out_time')">
+                    Pulang
+                </button>
             </div>
         </form>
 
@@ -33,7 +48,7 @@
     <div class="col-md-8 col-lg-9 col-12 py-4">
         <div class="d-flex justify-content-between align-items-center w-100 border-bottom py-2">
             <h6>Aktivitas</h6>
-            <a class="link-offset-2 link-offset-3-hover link-underline link-underline-opacity-0 " href="#">Log absensi</a>
+            <a class="link-offset-2 link-offset-3-hover link-underline link-underline-opacity-0 " href="{{ route('attendances.log') }}">Log absensi</a>
         </div>
         <div class="table-responsive">
             <table class="table">
@@ -50,7 +65,7 @@
                     @foreach($attendances as $a)
                     <tr>
                         <td class="v-middle">{{ $a->date->format('Y-m-d') }}</td>
-                        <td class="v-middle">{{ optional($a->workSchedule)->start_time ? \Carbon\Carbon::parse($a->workSchedule->start_time)->format('H:i') : '-' }} - {{ optional($a->workSchedule)->end_time ? \Carbon\Carbon::parse($a->workSchedule->end_time)->format('H:i') : '-' }}</td>
+                        <td class="v-middle">{{ optional($a?->workSchedule?->workingTime)?->start_time ? \Carbon\Carbon::parse($a->workSchedule->workingTime->start_time)->format('H:i') : '-' }} - {{ optional($a?->workSchedule?->workingTime)?->end_time ? \Carbon\Carbon::parse($a->workSchedule->workingTime->end_time)->format('H:i') : '-' }}</td>
                         <td class="v-middle">{{ $a->clock_in_time ? $a->clock_in_time->format('H:i:s') : '-' }}</td>
                         <td class="v-middle">{{ $a->clock_out_time ? $a->clock_out_time->format('H:i:s') : '-' }}</td>
                         <td class="v-middle">{{ ucfirst($a->status) }}</td>
@@ -77,7 +92,7 @@
             <div class="modal-body">
                 <p id="modalText"></p>
 
-                @if($schedule?->is_location_limited)
+                @if($activeShift?->workingTime?->is_location_limited)
                     <div id="map" style="height:300px;" class="mb-3"></div>
                     <input type="hidden" id="location_lat_long" name="location_lat_long">
                     <p class="small text-muted">Pastikan Anda berada di lokasi yang ditentukan.</p>
@@ -142,7 +157,7 @@
         const confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
         confirmModal.show();
 
-        @if($schedule?->is_location_limited)
+        @if($activeShift?->workingTime?->is_location_limited)
         document.getElementById('confirmModal').addEventListener('shown.bs.modal', function () {
             initMap();
         }, { once: true });
@@ -225,7 +240,7 @@
         typeInput.value = selectedType;
         form.appendChild(typeInput);
 
-        @if($schedule?->is_location_limited)
+        @if($activeShift?->workingTime?->is_location_limited)
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(pos => {
                 let locInput = document.createElement('input');
@@ -257,7 +272,7 @@
         }
     });
 
-@if($schedule?->is_location_limited)
+@if($activeShift?->workingTime?->is_location_limited)
 function initMap(){
     const mapDiv=document.getElementById('map');
     if(map){ map.remove(); map=null; }
@@ -284,6 +299,77 @@ function initMap(){
     },100);
 }
 @endif
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const btnClockIn = document.getElementById('btnClockIn');
+        const btnClockOut = document.getElementById('btnClockOut');
+        const now = new Date();
+
+        console.log('Current time:', now.toISOString());
+        console.log('Current time local:', now.toString());
+
+        function checkButton(btn, buttonName) {
+            if (!btn) {
+                console.log(`${buttonName} button not found`);
+                return;
+            }
+
+            const startStr = btn.dataset.start;
+            const endStr = btn.dataset.end;
+            
+            console.log(`${buttonName} window:`, {
+                start: startStr,
+                end: endStr
+            });
+
+            if (!startStr || !endStr) {
+                console.log(`${buttonName}: Missing window data`);
+                btn.disabled = true;
+                btn.title = "Data jadwal tidak tersedia";
+                btn.classList.add('btn-secondary');
+                btn.classList.remove('btn-primary', 'btn-light');
+                return;
+            }
+
+            const start = new Date(startStr);
+            const end = new Date(endStr);
+
+            const isInWindow = now >= start && now <= end;
+            
+            console.log(`${buttonName} check:`, {
+                now: now.toISOString(),
+                start: start.toISOString(),
+                end: end.toISOString(),
+                isInWindow: isInWindow,
+                minutesToStart: Math.ceil((start - now) / (1000 * 60)),
+                minutesFromEnd: Math.ceil((now - end) / (1000 * 60))
+            });
+
+            if (!isInWindow) {
+                btn.disabled = true;
+                
+                if (now < start) {
+                    const minutesUntilStart = Math.ceil((start - now) / (1000 * 60));
+                    btn.title = `Belum waktunya. Bisa absen dalam ${minutesUntilStart} menit`;
+                } else if (now > end) {
+                    const minutesAfterEnd = Math.ceil((now - end) / (1000 * 60));
+                    btn.title = `Waktu absensi sudah lewat ${minutesAfterEnd} menit yang lalu`;
+                }
+                
+                btn.classList.add('btn-secondary');
+                btn.classList.remove('btn-primary', 'btn-light');
+            } else {
+                console.log(`${buttonName} is enabled`);
+                btn.disabled = false;
+                btn.title = "Klik untuk melakukan absensi";
+            }
+        }
+
+        checkButton(btnClockIn, 'Clock In');
+        checkButton(btnClockOut, 'Clock Out');
+    });
 </script>
 
 

@@ -40,6 +40,14 @@
                 </a>
             </li> 
             <li>
+                <a href="{{ route('working-time.index') }}">
+                    <div>
+                        <span class="mb-0"><i class="bi bi-clock mb-0"></i></span> Jam Kerja
+                    </div>
+                    <i class="bi bi-chevron-compact-right"></i>
+                </a>
+            </li> 
+            <li>
                 <a href="{{ route('holiday.index') }}">
                     <div>
                         <span class="mb-0"><i class="bi bi-calendar-date mb-0"></i></span> Hari Libur

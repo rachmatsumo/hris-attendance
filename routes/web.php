@@ -31,6 +31,7 @@ Route::middleware('auth')->group(function () {
     Route::get('account/change-password', [AccountController::class, 'changePassword'])->name('account.change-password');
     
     // Absensi
+    Route::get('attendances/log', [AttendanceController::class, 'log'])->name('attendances.log');
     Route::resource('attendances', AttendanceController::class)->only(['index', 'store', 'update']);
     
     // Izin Absensi / Leave Requests

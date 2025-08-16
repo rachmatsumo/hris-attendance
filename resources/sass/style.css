@@ -124,3 +124,10 @@ body {
 /* .pagination span{
     display: none!important;
 } */
+
+#calendar-body td {
+    text-align: center;
+    vertical-align: middle;
+    font-weight: 600;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.13); /* shadow hitam */
+}

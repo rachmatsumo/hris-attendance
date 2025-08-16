@@ -59,7 +59,7 @@
                     <span>Home</span>
                 </a>
                 <a href="{{ route('attendances.index') }}" 
-                class="nav-link {{ request()->routeIs('attendances.index') ? 'active' : '' }}">
+                class="nav-link {{ request()->routeIs('attendances.*') ? 'active' : '' }}">
                     <i class="bi bi-calendar-check-fill"></i>
                     <span>Absensi</span>
                 </a>
@@ -71,7 +71,19 @@
                 
                 @if(Auth::user()->role=='admin' || Auth::user()->role=='hr') 
                     <a href="{{ route('admin.index') }}" 
-                    class="nav-link {{ request()->routeIs('admin.*') ? 'active' : '' }}">
+                    class="nav-link {{ request()->routeIs('admin.*') || 
+                                        request()->routeIs('work-schedule.*') ||
+                                        request()->routeIs('location.*') ||
+                                        request()->routeIs('department.*') ||
+                                        request()->routeIs('user.*') ||
+                                        request()->routeIs('position.*') ||
+                                        request()->routeIs('holiday.*') ||
+                                        request()->routeIs('working-time.*') ||
+                                        request()->routeIs('setting.*') ||
+                                        request()->routeIs('payroll.*') ||
+                                        request()->routeIs('recap-attendance.*')
+                                        
+                                        ? 'active' : '' }}">
                         <i class="bi bi-device-hdd"></i>
                         <span>Admin</span>
                     </a>

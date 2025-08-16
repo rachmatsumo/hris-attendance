@@ -2,65 +2,64 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Models\WorkSchedule;
+use App\Models\WorkingTime;
+use Carbon\Carbon;
 
 class WorkScheduleSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        $employees = User::where('role', 'employee')->get();
+        $users = User::whereIn('role', ['employee', 'hr'])->get();
 
-        foreach ($employees as $employee) {
-            // Monday to Friday (1-5)
-            for ($day = 1; $day <= 5; $day++) {
-                WorkSchedule::create([
-                    'user_id' => $employee->id,
-                    'day_of_week' => $day,
-                    'start_time' => '08:00:00',
-                    'end_time' => '17:00:00',
-                    'break_start_time' => '12:00:00',
-                    'break_end_time' => '13:00:00',
-                    'late_tolerance_minutes' => 15,
-                    'is_active' => true,
-                ]);
+        // Ambil semua shift
+        $shifts = WorkingTime::whereIn('name', [
+            'Shift Pagi', 'Shift Siang', 'Shift Malam', 'Office Hour'
+        ])->pluck('id', 'name');
+
+        $shiftPagi     = $shifts['Shift Pagi'] ?? null;
+        $shiftSiang    = $shifts['Shift Siang'] ?? null;
+        $shiftMalam    = $shifts['Shift Malam'] ?? null;
+        $officeHour    = $shifts['Office Hour'] ?? null;
+
+        $startDate = Carbon::create(2025, 8, 1);
+        $endDate   = $startDate->copy()->endOfMonth();
+
+        foreach ($users as $user) {
+            $insertData = [];
+            $date = $startDate->copy();
+
+            while ($date->lte($endDate)) {
+
+                if ($user->role === 'hr') {
+                    // Untuk HR: Senin (1) s/d Jumat (5) -> Office Hour
+                    $workingTimeId = ($date->dayOfWeekIso >= 1 && $date->dayOfWeekIso <= 5) ? $officeHour : null;
+                } else {
+                    // Untuk employee: Pola 5 hari: Pagi → Siang → Malam → Libur → Libur
+                    $dayOfCycle = ($date->day - 1) % 5;
+                    $workingTimeId = match ($dayOfCycle) {
+                        0 => $shiftPagi,
+                        1 => $shiftSiang,
+                        2 => $shiftMalam,
+                        default => null,
+                    };
+                }
+
+                $insertData[] = [
+                    'user_id'         => $user->id,
+                    'work_date'       => $date->toDateString(),
+                    'working_time_id' => $workingTimeId,
+                    'is_active'       => $workingTimeId !== null,
+                    'created_at'      => now(),
+                    'updated_at'      => now(),
+                ];
+
+                $date->addDay();
             }
 
-            // Saturday (6) - Half day
-            WorkSchedule::create([
-                'user_id' => $employee->id,
-                'day_of_week' => 6,
-                'start_time' => '08:00:00',
-                'end_time' => '12:00:00',
-                'break_start_time' => null,
-                'break_end_time' => null,
-                'late_tolerance_minutes' => 10,
-                'is_active' => true,
-            ]);
-        }
-
-        // HR and Admin with different schedule
-        $hrUsers = User::whereIn('role', ['admin', 'hr'])->get();
-        
-        foreach ($hrUsers as $user) {
-            // Monday to Friday
-            for ($day = 1; $day <= 5; $day++) {
-                WorkSchedule::create([
-                    'user_id' => $user->id,
-                    'day_of_week' => $day,
-                    'start_time' => '07:30:00',
-                    'end_time' => '16:30:00',
-                    'break_start_time' => '12:00:00',
-                    'break_end_time' => '13:00:00',
-                    'late_tolerance_minutes' => 10,
-                    'is_active' => true,
-                ]);
-            }
+            WorkSchedule::insert($insertData);
         }
     }
 }

@@ -50,8 +50,8 @@ class Attendance extends Model
 
     public function workSchedule()
     {
-        return $this->belongsTo(WorkSchedule::class, 'user_id', 'user_id')
-            ->where('day_of_week', Carbon::parse($this->date)->dayOfWeek);
+        return $this->belongsTo(WorkSchedule::class, 'work_schedule_id', 'id')
+                    ->with('workingTime'); // eager load relasi ke WorkingTime
     }
 
     // public function getTodayWorkScheduleAttribute()

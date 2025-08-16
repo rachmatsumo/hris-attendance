@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('work_schedules', function (Blueprint $table) {
-            $table->boolean('is_location_limited')->default(false)->after('is_active');
+            $table->string('bulk_id', 32)->nullable()->after('is_active');
         });
     }
 
@@ -21,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('work_schedules');
+        Schema::table('work_schedules', function (Blueprint $table) {
+            $table->dropColumn('bulk_id');
+        });
     }
 };

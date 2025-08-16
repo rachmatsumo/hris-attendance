@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             DepartmentSeeder::class,
             PositionSeeder::class,
             UserSeeder::class,
+            WorkingTimeSeeder::class,
             WorkScheduleSeeder::class,
             HolidaySeeder::class,
             SettingSeeder::class,

@@ -14,6 +14,10 @@ return new class extends Migration
         Schema::create('attendances', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('work_schedule_id')
+                  ->nullable() // biar tidak wajib diisi saat ada data lama
+                  ->constrained('work_schedules') // relasi ke work_schedules.id
+                  ->cascadeOnDelete();
             $table->date('date');
             
             // Clock In Data
@@ -49,6 +53,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('attendances');
+        Schema::dropIfExists('attendances'); 
     }
 };

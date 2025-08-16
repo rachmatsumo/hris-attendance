@@ -14,16 +14,14 @@ return new class extends Migration
         Schema::create('work_schedules', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->integer('day_of_week'); // 1=Monday, 2=Tuesday, ... 7=Sunday
-            $table->time('start_time');
-            $table->time('end_time');
-            $table->time('break_start_time')->nullable();
-            $table->time('break_end_time')->nullable();
-            $table->integer('late_tolerance_minutes')->default(15); // toleransi terlambat
+            $table->date('work_date')->index(); // tanggal spesifik
+            $table->foreignId('working_time_id')->nullable()
+                ->constrained('working_times')
+                ->nullOnDelete();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
-            
-            $table->unique(['user_id', 'day_of_week']);
+
+            $table->unique(['user_id', 'work_date']);
         });
     }
 
@@ -33,5 +31,10 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('work_schedules');
+
+        $table->foreignId('working_time_id')
+                ->nullable()
+                ->constrained('working_times')
+                ->nullOnDelete();
     }
 };

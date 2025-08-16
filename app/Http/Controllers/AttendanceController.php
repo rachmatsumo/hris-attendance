@@ -14,55 +14,203 @@ class AttendanceController extends Controller
     public function index()
     {
         $attendances = Attendance::with('workSchedule')
-            ->where('user_id', Auth::id())
-            ->orderBy('date', 'desc')
-            ->orderBy('date', 'desc')
-            ->limit(15)
-            ->paginate(5);
-
-        $schedule = WorkSchedule::where('user_id', Auth::id())
-            ->where('day_of_week', now()->dayOfWeek)
-            ->where('is_active', true)
-            ->first();
+                    ->where('user_id', Auth::id())
+                    ->orderBy('date', 'desc')
+                    ->paginate(5);
 
         $locations = Location::where('is_active', true)->get();
 
-            // dd($attendances);
+        $now = Carbon::now();
 
-        return view('attendances.attendance', compact('attendances', 'schedule', 'locations'));
+        // Ambil jadwal dari 2 hari sebelumnya hingga hari ini untuk mengcover shift malam
+        $schedules = WorkSchedule::with('workingTime')
+            ->where('user_id', Auth::id())
+            ->whereIn('work_date', [
+                today()->subDays(2), 
+                today()->subDay(), 
+                today()
+            ])
+            ->get();
+
+        // Cari shift yang sedang aktif berdasarkan waktu sekarang
+        $activeShifts = $schedules->filter(function($schedule) use ($now) {
+            if (!$schedule->workingTime) return false;
+
+            $shiftStart = Carbon::parse($schedule->workingTime->start_time)
+                                ->setDateFrom($schedule->work_date);
+            $shiftEnd = Carbon::parse($schedule->workingTime->end_time)
+                                ->setDateFrom($schedule->work_date);
+
+            if ($schedule->workingTime->end_next_day) {
+                $shiftEnd->addDay();
+            }
+
+            // Extended window untuk absensi
+            $clockInStart = $shiftStart->copy()->subHours(2);
+            $clockOutEnd = $shiftEnd->copy()->addHours(5);
+
+            return $now->between($clockInStart, $clockOutEnd);
+        });
+
+        // Prioritaskan shift yang sedang berlangsung, bukan yang akan datang
+        $currentlyRunning = $activeShifts->filter(function($schedule) use ($now) {
+            $shiftStart = Carbon::parse($schedule->workingTime->start_time)
+                                ->setDateFrom($schedule->work_date);
+            $shiftEnd = Carbon::parse($schedule->workingTime->end_time)
+                                ->setDateFrom($schedule->work_date);
+            
+            if ($schedule->workingTime->end_next_day) {
+                $shiftEnd->addDay();
+            }
+
+            return $now->between($shiftStart, $shiftEnd);
+        });
+
+        // Jika ada shift yang sedang berlangsung, gunakan itu
+        if ($currentlyRunning->isNotEmpty()) {
+            $activeShift = $currentlyRunning->first();
+        } else {
+            // Jika tidak ada yang sedang berlangsung, cari yang paling dekat
+            $activeShift = $activeShifts->sortBy(function($schedule) use ($now) {
+                $shiftStart = Carbon::parse($schedule->workingTime->start_time)
+                                    ->setDateFrom($schedule->work_date);
+                
+                return abs($now->diffInMinutes($shiftStart));
+            })->first();
+        }
+
+        // Fallback: jika masih tidak ada, ambil shift terdekat dari semua jadwal
+        if (!$activeShift) {
+            $activeShift = $schedules->sortBy(function($schedule) use ($now) {
+                if (!$schedule->workingTime) return PHP_INT_MAX;
+
+                $shiftStart = Carbon::parse($schedule->workingTime->start_time)
+                                    ->setDateFrom($schedule->work_date);
+                
+                return abs($now->diffInMinutes($shiftStart));
+            })->first();
+        }
+
+        // Cari shift untuk display (prioritas shift hari ini atau yang akan datang)
+        $displayShift = $schedules->filter(function($schedule) use ($now) {
+            $workDate = Carbon::parse($schedule->work_date);
+            return $workDate->isToday() || $workDate->isFuture();
+        })->sortBy('work_date')->first();
+
+        // Jika tidak ada shift hari ini/masa depan, gunakan active shift
+        if (!$displayShift) {
+            $displayShift = $activeShift;
+        }
+
+        $clockInWindow = null;
+        $clockOutWindow = null;
+
+        // Gunakan activeShift untuk window absensi, displayShift untuk tampilan jadwal
+        if ($activeShift && $activeShift->workingTime) {
+            $shiftStart = Carbon::parse($activeShift->workingTime->start_time)
+                                ->setDateFrom($activeShift->work_date);
+            $shiftEnd = Carbon::parse($activeShift->workingTime->end_time)
+                                ->setDateFrom($activeShift->work_date);
+            
+            if ($activeShift->workingTime->end_next_day) {
+                $shiftEnd->addDay();
+            }
+
+            $clockInWindow = [
+                'start' => $shiftStart->copy()->subHours(2)->toISOString(),
+                'end' => $shiftStart->copy()->addHours(1)->toISOString(),
+            ];
+            
+            $clockOutWindow = [
+                'start' => $shiftEnd->copy()->subMinutes(30)->toISOString(),
+                'end' => $shiftEnd->copy()->addHours(5)->toISOString(),
+            ];
+        }
+
+        // Untuk debugging - bisa dihapus setelah testing
+        // dd([
+        //     'now' => $now->toDateTimeString(),
+        //     'activeShift' => $activeShift ? [
+        //         'date' => Carbon::parse($activeShift->work_date)->toDateString(),
+        //         'time' => $activeShift->workingTime->start_time . ' - ' . $activeShift->workingTime->end_time,
+        //         'end_next_day' => $activeShift->workingTime->end_next_day ?? false
+        //     ] : null,
+        //     'displayShift' => $displayShift ? [
+        //         'date' => Carbon::parse($displayShift->work_date)->toDateString(), 
+        //         'time' => $displayShift->workingTime->start_time . ' - ' . $displayShift->workingTime->end_time
+        //     ] : null,
+        //     'clockInWindow' => $clockInWindow,
+        //     'clockOutWindow' => $clockOutWindow,
+        //     'schedules' => $schedules->map(fn($s) => [
+        //         'date' => Carbon::parse($s->work_date)->toDateString(),
+        //         'time' => $s->workingTime->start_time . ' - ' . $s->workingTime->end_time,
+        //         'end_next_day' => $s->workingTime->end_next_day ?? false
+        //     ])
+        // ]);
+
+        return view('attendances.attendance', compact(
+            'attendances', 
+            'activeShift',        // Untuk window absensi (shift yang sedang berlangsung)
+            'displayShift',       // Untuk tampilan jadwal (shift hari ini/akan datang) 
+            'locations',
+            'clockInWindow',
+            'clockOutWindow'
+        ));
     }
-
+ 
     public function store(Request $request)
     {
-        $type = $request->input('type'); // clock_in_time atau clock_out_time
+        $type = $request->input('type'); // clock_in_time / clock_out_time
 
         // Validasi wajib foto
         if (!$request->photo) {
             return redirect()->back()->with('error', 'Foto wajib diambil sebelum clock in/out');
         }
 
-        // Cari attendance hari ini
-        $attendance = Attendance::firstOrNew([
-            'user_id' => Auth::id(),
-            'date' => now()->toDateString(),
-        ]);
-
-        // Status dan late
-        $schedule = WorkSchedule::where('user_id', Auth::id())
-            ->where('day_of_week', now()->dayOfWeek)
-            ->where('is_active', true)
+        // Ambil jadwal hari ini
+        $schedule = WorkSchedule::with('workingTime')
+            ->where('user_id', Auth::id())
+            ->whereDate('work_date', today())
             ->first();
 
-            // Ambil lokasi pengguna
+        if (!$schedule) {
+            return redirect()->back()->with('error', 'Jadwal kerja tidak ditemukan untuk hari ini.');
+        }
+
+        $shiftStart = Carbon::parse($schedule?->workingTime?->start_time)
+                            ->setDateFrom($schedule?->work_date);
+        $shiftEnd = Carbon::parse($schedule?->workingTime?->end_time)
+                            ->setDateFrom($schedule?->work_date);
+
+        // Shift malam (+1 hari)
+        if ($schedule?->workingTime?->end_next_day) {
+            $shiftEnd->addDay();
+            // Jika sekarang sebelum shift start, anggap tanggal attendance shift kemarin
+            if (now()->lessThan($shiftStart)) {
+                $shiftStart->subDay();
+                $shiftEnd->subDay();
+            }
+        }
+
+        // Tentukan tanggal attendance (shift start date)
+        $attendanceDate = $shiftStart->toDateString();
+
+        // Ambil atau buat record attendance
+        $attendance = Attendance::firstOrNew([
+            'user_id' => Auth::id(),
+            'date' => $attendanceDate,
+        ]);
+
+        $attendance->work_schedule_id = $schedule->id;
+
+        // Ambil lokasi pengguna
         $userLat = $userLng = null;
         if ($request->location_lat_long) {
             [$userLat, $userLng] = explode(',', $request->location_lat_long);
         }
 
-        // Ambil lokasi aktif schedule jika ada
+        // Cek lokasi radius
         $locations = Location::where('is_active', true)->get();
-
-        // Fungsi helper untuk cek radius
         $isWithinRadius = false;
         foreach ($locations as $loc) {
             if ($loc->lat_long && $userLat && $userLng) {
@@ -73,40 +221,48 @@ class AttendanceController extends Controller
                     break;
                 }
             }
-        } 
-
-        // dd($schedule, $isWithinRadius, $userLat, $userLng);
-
-        if($schedule?->is_location_limited === 0){
-            $isWithinRadius = true; // Jika lokasi tidak dibatasi, set ke true
+        }
+        if ($schedule?->workingTime?->is_location_limited === 0) {
+            $isWithinRadius = true;
         }
 
+        // Clock In
         if ($type === 'clock_in_time' && !$attendance->clock_in_time) {
+            $now = now();
+            $earliestClockIn = $shiftStart->copy()->subHours(2); // 2 jam sebelum shift start
+
+            if ($now->lessThan($earliestClockIn)) {
+                return redirect()->back()->with('error', 'Clock in terlalu awal. Anda hanya bisa clock in maksimal 2 jam sebelum shift.');
+            }
+
+            
             $attendance->clock_in_time = now();
             $attendance->clock_in_photo = $this->savePhoto($request->photo);
             $attendance->clock_in_lat = $userLat;
             $attendance->clock_in_lng = $userLng;
             $attendance->clock_in_notes = $isWithinRadius ? null : 'out of radius';
 
-            if ($schedule) {
-                $scheduledStart = Carbon::parse($schedule->start_time);
-                $toleranceTime = $scheduledStart->copy()->addMinutes(
-                    (int) ($schedule->late_tolerance_minutes ?? 0)
-                );
-                if (Carbon::parse($attendance->clock_in_time)->greaterThan($toleranceTime)) {
-                    $attendance->status = 'late';
-                    $attendance->late_minutes = Carbon::parse($attendance->clock_in_time)->diffInMinutes($scheduledStart);
-                } else {
-                    $attendance->status = 'present';
-                    $attendance->late_minutes = 0;
-                }
+            $toleranceTime = $shiftStart->copy()
+                                ->addMinutes($schedule->workingTime->late_tolerance_minutes ?? 0);
+
+            if (now()->greaterThan($toleranceTime)) {
+                $attendance->status = 'late';
+                $attendance->late_minutes = now()->diffInMinutes($shiftStart);
             } else {
-                $attendance->status = 'overtime';
+                $attendance->status = 'present';
                 $attendance->late_minutes = 0;
             }
         }
 
+        // Clock Out
         if ($type === 'clock_out_time') {
+            $now = now();
+            $latestClockOut = $shiftEnd->copy()->addHours(5); // 5 jam setelah shift end
+
+            if ($now->greaterThan($latestClockOut)) {
+                return redirect()->back()->with('error', 'Clock out sudah melewati batas maksimal 5 jam setelah shift berakhir.');
+            }
+            
             $attendance->clock_out_time = now();
             $attendance->clock_out_photo = $this->savePhoto($request->photo);
             $attendance->clock_out_lat = $userLat;
@@ -115,8 +271,9 @@ class AttendanceController extends Controller
 
             // Hitung jam kerja
             if ($attendance->clock_in_time) {
-                $attendance->working_hours = Carbon::parse($attendance->clock_out_time)
-                    ->diffInHours(Carbon::parse($attendance->clock_in_time));
+                $clockIn = Carbon::parse($attendance->clock_in_time);
+                $clockOut = Carbon::parse($attendance->clock_out_time);
+                $attendance->working_hours = round($clockOut->floatDiffInHours($clockIn), 2);
             }
         }
 
@@ -126,7 +283,7 @@ class AttendanceController extends Controller
             ->with('success', ucfirst(str_replace('_', ' ', $type)) . ' recorded');
     }
 
-    // Fungsi simpan foto base64 ke file
+    // Simpan foto base64
     protected function savePhoto($photoData)
     {
         $folder = 'upload/attendance';
@@ -142,21 +299,35 @@ class AttendanceController extends Controller
         return "$folder/$fileName";
     }
 
+    // Hitung jarak km
     protected function distanceInKm($lat1, $lng1, $lat2, $lng2)
     {
-        $earthRadius = 6371; // km
+        $earthRadius = 6371;
         $dLat = deg2rad($lat2 - $lat1);
         $dLng = deg2rad($lng2 - $lng1);
 
-        $a = sin($dLat/2) * sin($dLat/2) +
-            cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
-            sin($dLng/2) * sin($dLng/2);
+        $a = sin($dLat / 2) ** 2 +
+             cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+             sin($dLng / 2) ** 2;
 
-        $c = 2 * atan2(sqrt($a), sqrt(1-$a));
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
         return $earthRadius * $c;
     }
 
+    public function log(Request $request)
+    {
+        $month = $request->month ?? date('Y-m'); 
 
+        $data = WorkSchedule::with('attendance')
+                ->with('workingTime')
+                ->where('user_id', Auth::id())
+                ->whereYear('work_date', explode('-', $month)[0])
+                ->whereMonth('work_date', explode('-', $month)[1]) 
+                ->orderBy('work_date', 'ASC')
+                ->get(); 
+ 
+        return view('attendances.log', compact('data', 'month'));
 
+    }
 
 }
