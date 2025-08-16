@@ -46,7 +46,7 @@
                             </thead>
                             <tbody>
                                 @php $no=1 ; @endphp
-                                @forelse ($data as $row)
+                                @forelse ($bulkSchedules as $row)
                                 <tr>
                                     <td>{{ $no++ }}</td>
                                     <td>{{ $row['bulk_id'] }}</td>
@@ -55,14 +55,16 @@
                                     <td>{{ $row['total_hari_libur'] }}</td>
                                     <td>{{ $row['hari_pertama'] }}</td>
                                     <td>{{ $row['hari_terakhir'] }}</td>
-                                    <td>
-                                        <a href="{{ route('work-schedule.show', $row['bulk_id'] ?? 0) }}" class="btn btn-sm btn-info">Detail</a>
-                                        {{-- Aksi hapus bulk id --}}
-                                        <form action="{{ route('work-schedule.batch-destroy', $row['bulk_id']) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus bulk ini?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-danger">Hapus</button>
-                                        </form>
+                                    <td> 
+                                        <div class="d-flex">
+                                            <a href="{{ route('work-schedule.show', $row['bulk_id'] ?? 0) }}" class="btn btn-sm btn-info me-2"><i class="bi bi-eye"></i></a>
+                                            {{-- Aksi hapus bulk id --}}
+                                            <form action="{{ route('work-schedule.batch-destroy', $row['bulk_id']) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus bulk ini?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-danger"><i class="bi bi-trash2"></i></button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                                 @empty
@@ -73,8 +75,8 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="pagination justify-content-center mt-3"> 
-                        {{-- {{ $work_schedules->links('pagination::bootstrap-5') }} --}}
+                    <div class="pagination flex-column justify-content-center mt-3"> 
+                        {{ $bulkSchedules->links('pagination::bootstrap-5') }}
                     </div>
                 
                 </div>

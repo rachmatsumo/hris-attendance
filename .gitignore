@@ -37,3 +37,6 @@ Thumbs.db
 
 # KECUALI default.png di thumbnails
 !/public/upload/avatar/thumbnails/default.png
+
+/public/upload/leave/*
+!/public/upload/leave/.gitkeep

@@ -75,10 +75,10 @@ class User extends Authenticatable
         return $this->hasMany(Attendance::class);
     }
 
-    public function leaveRequests()
-    {
-        return $this->hasMany(LeaveRequest::class);
-    }
+    // public function leaveRequests()
+    // {
+    //     return $this->hasMany(LeaveRequest::class);
+    // }
 
     public function attendancePermits()
     {
@@ -106,70 +106,100 @@ class User extends Authenticatable
         return $query->where('is_active', true);
     }
 
-    public function scopeEmployee($query)
+    public function leaveQuota($year = null)
     {
-        return $query->where('role', 'employee');
-    }
+        $year = $year ?? date('Y');
 
-    public function scopeAdmin($query)
-    {
-        return $query->where('role', 'admin');
-    }
+        $limit_cuti = Setting::where('key', 'annual_leave_quota')->value('value') ?? 12;
+        $limit_izin = Setting::where('key', 'permit_quota')->value('value') ?? 12;
 
-    public function scopeHR($query)
-    {
-        return $query->where('role', 'hr');
-    }
+        $count_cuti = $this->attendancePermits()
+            ->where('type', 'leave')
+            ->where('status', '!=', 'rejected')
+            ->whereYear('start_date', $year)
+            ->sum('total_day');
 
-    // Accessors
-    public function getProfilePhotoUrlAttribute()
-    {
-        return $this->profile_photo ? asset('storage/' . $this->profile_photo) : null;
-    }
-
-    public function getFullNameAttribute()
-    {
-        return $this->name . ' (' . $this->employee_id . ')';
-    }
-
-    // Methods
-    public function getTodayAttendance()
-    {
-        return $this->attendances()->forDate(today())->first();
-    }
-
-    public function hasWorkSchedule($dayOfWeek = null)
-    {
-        $day = $dayOfWeek ?? today()->dayOfWeek;
-        return $this->workSchedules()->active()->forDay($day)->exists();
-    }
-
-    public function getWorkSchedule($dayOfWeek = null)
-    {
-        $day = $dayOfWeek ?? today()->dayOfWeek;
-        return $this->workSchedules()->active()->forDay($day)->first();
-    }
-
-    public function canApprove()
-    {
-        return in_array($this->role, ['admin', 'hr']);
-    }
-
-    public function getMonthlyAttendanceSummary($month = null, $year = null)
-    {
-        $month = $month ?? now()->month;
-        $year = $year ?? now()->year;
-
-        $attendances = $this->attendances()->forMonth($month, $year)->get();
+        $count_izin = $this->attendancePermits()
+            ->where('type', '!=', 'leave')
+            ->where('status', '!=', 'rejected')
+            ->whereYear('start_date', $year)
+            ->sum('total_day');
 
         return [
-            'total_present' => $attendances->where('status', 'present')->count(),
-            'total_late' => $attendances->where('status', 'late')->count(),
-            'total_absent' => $attendances->where('status', 'absent')->count(),
-            'total_sick' => $attendances->where('status', 'sick')->count(),
-            'total_permission' => $attendances->where('status', 'permission')->count(),
-            'total_working_hours' => $attendances->sum('working_hours'),
-            'total_overtime_hours' => $attendances->sum('overtime_hours'),
+            'limit_cuti' => $limit_cuti,
+            'limit_izin' => $limit_izin,
+            'count_cuti' => $count_cuti,
+            'count_izin' => $count_izin,
+            'sisa_cuti'  => $limit_cuti - $count_cuti,
+            'sisa_izin'  => $limit_izin - $count_izin,
         ];
     }
+
+
+    // public function scopeEmployee($query)
+    // {
+    //     return $query->where('role', 'employee');
+    // }
+
+    // public function scopeAdmin($query)
+    // {
+    //     return $query->where('role', 'admin');
+    // }
+
+    // public function scopeHR($query)
+    // {
+    //     return $query->where('role', 'hr');
+    // }
+
+    // // Accessors
+    // public function getProfilePhotoUrlAttribute()
+    // {
+    //     return $this->profile_photo ? asset('storage/' . $this->profile_photo) : null;
+    // }
+
+    // public function getFullNameAttribute()
+    // {
+    //     return $this->name . ' (' . $this->employee_id . ')';
+    // }
+
+    // // Methods
+    // public function getTodayAttendance()
+    // {
+    //     return $this->attendances()->forDate(today())->first();
+    // }
+
+    // public function hasWorkSchedule($dayOfWeek = null)
+    // {
+    //     $day = $dayOfWeek ?? today()->dayOfWeek;
+    //     return $this->workSchedules()->active()->forDay($day)->exists();
+    // }
+
+    // public function getWorkSchedule($dayOfWeek = null)
+    // {
+    //     $day = $dayOfWeek ?? today()->dayOfWeek;
+    //     return $this->workSchedules()->active()->forDay($day)->first();
+    // }
+
+    // public function canApprove()
+    // {
+    //     return in_array($this->role, ['admin', 'hr']);
+    // }
+
+    // public function getMonthlyAttendanceSummary($month = null, $year = null)
+    // {
+    //     $month = $month ?? now()->month;
+    //     $year = $year ?? now()->year;
+
+    //     $attendances = $this->attendances()->forMonth($month, $year)->get();
+
+    //     return [
+    //         'total_present' => $attendances->where('status', 'present')->count(),
+    //         'total_late' => $attendances->where('status', 'late')->count(),
+    //         'total_absent' => $attendances->where('status', 'absent')->count(),
+    //         'total_sick' => $attendances->where('status', 'sick')->count(),
+    //         'total_permission' => $attendances->where('status', 'permission')->count(),
+    //         'total_working_hours' => $attendances->sum('working_hours'),
+    //         'total_overtime_hours' => $attendances->sum('overtime_hours'),
+    //     ];
+    // }
 }

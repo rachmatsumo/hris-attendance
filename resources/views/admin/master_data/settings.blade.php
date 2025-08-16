@@ -34,14 +34,14 @@
                                     <td class="v-middle">{{ $a->value }}</td>
                                     <td class="v-middle">{{ $a->description }}</td> 
                                     <td>
-                                          <button class="btn btn-sm btn-primary openModalInputBtn editDataBtn"
+                                        <button class="btn btn-sm btn-light openModalInputBtn editDataBtn"
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#modalInput"
                                                 method="put"
                                                 title="{{ ucwords(str_replace('_',' ', $a->key)) }}"
                                                 data-id="{{ $a->id }}"
                                                 data-url="{{ route('setting.update', $a->id) }}">
-                                            Edit
+                                            <i class="bi bi-pencil"></i>
                                         </button> 
                                     </td> 
                                 </tr>
@@ -85,8 +85,9 @@
 
 <script>
     document.addEventListener('click', function(e) {
-        if(e.target && e.target.classList.contains('editDataBtn')) {
-            const id = e.target.dataset.id;
+        const btn = e.target.closest('.editDataBtn');
+        if(btn) {
+            const id = btn.dataset.id;
             const url = `/setting/${id}`; // route show bisa dikustom
             const form = document.getElementById('inputForm');
             const methodField = document.getElementById('methodField');
@@ -97,7 +98,7 @@
             .then(data => {
               console.log(data);
               // Set action form dan method
-                    form.action = e.target.dataset.url;
+                    form.action = url;
                     methodField.innerHTML = '@method("PUT")';
 
                     form.querySelector('#element_setting').innerHTML = data.element; 

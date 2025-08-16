@@ -23,6 +23,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js" integrity="sha256-kmHvs0B+OpCW5GVHUNjv9rOmY0IvSIRcf7zGUDTDQM8=" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
 </head>
 <body>
      <div id="loader-overlay">
@@ -63,10 +67,10 @@
                     <i class="bi bi-calendar-check-fill"></i>
                     <span>Absensi</span>
                 </a>
-                <a href="{{ route('permits.index') }}" 
-                class="nav-link {{ request()->routeIs('permits.*') ? 'active' : '' }}">
+                <a href="{{ route('attendance-permit.index') }}" 
+                class="nav-link {{ request()->routeIs('attendance-permit.*') ? 'active' : '' }}">
                     <i class="bi bi-person-check-fill"></i>
-                    <span>Izin</span>
+                    <span>Cuti & Izin</span>
                 </a>
                 
                 @if(Auth::user()?->role=='admin' || Auth::user()?->role=='hr') 
@@ -167,20 +171,30 @@
 
     <script>
         $(document).on('click', '.openModalInputBtn', function(e) {
-            var form = document.getElementById('inputForm');
-            var id = $(this).attr('data-id');
-            var url = $(this).attr('data-url');
-            var method = $(this).attr('method');
-            var title = $(this).attr('title');
+            var form   = document.getElementById('inputForm');
+            var id     = $(this).attr('data-id');
+            var url    = $(this).attr('data-url');
+            var method = $(this).attr('method'); // hati2, jangan pakai attr('method') krn bisa bentrok dgn form
+            var title  = $(this).attr('title');
 
             console.log(url, method, title);
+
             $('#modalInput .modal-title').text(title);
 
-            if(method=='post'){
-                form.reset();
-                $('#modalInput form').attr('action', url);
+            // reset form field setiap kali buka modal
+            form.reset();
+
+            // set action ulang
+            $('#inputForm').attr('action', url);
+
+            // atur methodField
+            if (method === 'post') {
                 $('#methodField').html('');
-            } 
+            } else if (method === 'put') {
+                $('#methodField').html('@method("PUT")');
+            } else if (method === 'patch') {
+                $('#methodField').html('@method("PATCH")');
+            }
         });
     </script>
 </body>

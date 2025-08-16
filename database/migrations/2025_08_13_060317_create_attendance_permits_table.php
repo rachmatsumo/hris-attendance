@@ -13,13 +13,12 @@ return new class extends Migration
     {
         Schema::create('attendance_permits', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->date('date');
-            $table->enum('type', ['late_arrival', 'early_departure', 'sick_during_work', 'urgent_leave']);
-            $table->time('requested_time')->nullable(); // jam yang diminta (untuk terlambat/pulang cepat)
-            $table->text('reason');
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete(); 
+            $table->enum('type', ['late_arrival', 'early_departure', 'sick_during_work', 'urgent_leave', 'leave']);
+            // $table->time('requested_time')->nullable();  
+            $table->text('reason')->nullable();
             $table->string('attachment')->nullable();
-            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->enum('status', ['pending', 'approved', 'rejected', 'withdraw'])->default('pending');
             
             // Approval Info
             $table->foreignId('approved_by')->nullable()->constrained('users')->nullOnDelete();

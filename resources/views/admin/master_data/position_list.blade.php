@@ -21,8 +21,8 @@
                         <table class="table">
                             <thead>
                                 <tr> 
-                                    <th class="v-middle">Jabatan</th>
                                     <th class="v-middle">Divisi</th>
+                                    <th class="v-middle">Jabatan</th>
                                     <th class="v-middle">THP</th>
                                     <th class="v-middle">Option</th>
                                 </tr>
@@ -30,27 +30,30 @@
                             <tbody>
                                 @foreach($positions as $a)
                                 <tr> 
-                                    <td class="v-middle">{{ $a->name }}</td>
                                     <td class="v-middle">{{ $a->department->name }}</td>
+                                    <td class="v-middle">{{ $a->name }}</td>
                                     <td class="v-middle">{{ number_format(optional($a->salary)->net_salary) }}</td>
                                     <td>
+                                        <div class="d-flex">
                                          <!-- Tombol Edit -->
-                                        <button class="btn btn-sm btn-primary openModalInputBtn editDataBtn"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#modalInput"
-                                                method="put"
-                                                title="Edit Jabatan"
-                                                data-id="{{ $a->id }}"
-                                                data-url="{{ route('position.update', $a->id) }}">
-                                            Edit
-                                        </button>
+                                            <button class="btn btn-sm btn-light openModalInputBtn editDataBtn me-2"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#modalInput"
+                                                    method="put"
+                                                    title="Edit Jabatan"
+                                                    data-id="{{ $a->id }}"
+                                                    data-url="{{ route('position.update', $a->id) }}">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
 
-                                        <!-- Tombol Hapus -->
-                                        <form action="{{ route('position.destroy', $a->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Yakin hapus?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-danger">Hapus</button>
-                                        </form>
+                                            <!-- Tombol Hapus -->
+                                            <form action="{{ route('position.destroy', $a->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Yakin hapus?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-danger"><i class="bi bi-trash2"></i></button>
+                                            </form>
+                                   
+                                        </div>
 
                                     </td> 
                                 </tr>
@@ -58,7 +61,7 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="pagination justify-content-center mt-3"> 
+                    <div class="pagination flex-column justify-content-center mt-3"> 
                         {{ $positions->links('pagination::bootstrap-5') }}
                     </div>
                 
@@ -122,8 +125,9 @@
 
 <script>
     document.addEventListener('click', function(e) {
-        if(e.target && e.target.classList.contains('editDataBtn')) {
-            const id = e.target.dataset.id;
+        const btn = e.target.closest('.editDataBtn');
+        if(btn) {
+            const id = btn.dataset.id;
             const url = `/position/${id}`; // route show bisa dikustom
             const form = document.getElementById('inputForm');
             const methodField = document.getElementById('methodField');
@@ -132,7 +136,7 @@
                 .then(res => res.json())
                 .then(data => {
                     // Set action form dan method
-                    form.action = e.target.dataset.url;
+                    form.action = url;
                     methodField.innerHTML = '@method("PUT")';
 
                     // Isi field
@@ -144,6 +148,6 @@
                 })
                 .catch(err => console.error(err));
         }
-    });
+    }); 
 </script>
 @endsection

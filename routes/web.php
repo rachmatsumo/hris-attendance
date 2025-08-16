@@ -35,7 +35,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('attendances', AttendanceController::class)->only(['index', 'store', 'update']);
     
     // Izin Absensi / Leave Requests
-    Route::resource('permits', AttendancePermitController::class)->only(['index', 'create', 'store', 'update']);
+    Route::get('attendance-permit/quota-check', [AttendancePermitController::class, 'quotaCheck'])->name('attendance-permit.quota-check');
+    Route::resource('attendance-permit', AttendancePermitController::class)->only(['index', 'show', 'create', 'store', 'update', 'destroy']);
 
 });
 

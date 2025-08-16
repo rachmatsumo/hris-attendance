@@ -33,53 +33,7 @@ class WorkSchedule extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
-    }
-
-    // public function scopeForDay($query, $dayOfWeek)
-    // {
-    //     return $query->where('day_of_week', $dayOfWeek);
-    // }
-
-    // // Get day name
-    // public function getDayNameAttribute()
-    // {
-    //     $days = [
-    //         1 => 'Monday',
-    //         2 => 'Tuesday', 
-    //         3 => 'Wednesday',
-    //         4 => 'Thursday',
-    //         5 => 'Friday',
-    //         6 => 'Saturday',
-    //         7 => 'Sunday'
-    //     ];
-        
-    //     return $days[$this->day_of_week] ?? '';
-    // }
-
-    // public function getDayOfWeekNameAttribute($lang)
-    // {
-    //     $days = [
-    //         1 => 'Senin',
-    //         2 => 'Selasa',
-    //         3 => 'Rabu',
-    //         4 => 'Kamis',
-    //         5 => 'Jumat',
-    //         6 => 'Sabtu',
-    //         7 => 'Minggu',
-    //     ];
-
-    //     return $days[$this->day_of_week] ?? null;
-    // }
-
-    // public function getStartTimeFormattedAttribute()
-    // {
-    //     return \Carbon\Carbon::parse($this->start_time)->format('H:i');
-    // }
-
-    // public function getEndTimeFormattedAttribute()
-    // {
-    //     return \Carbon\Carbon::parse($this->end_time)->format('H:i');
-    // }
+    } 
 
     public function workingTime()
     {

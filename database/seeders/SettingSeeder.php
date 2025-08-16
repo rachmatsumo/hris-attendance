@@ -51,10 +51,10 @@ class SettingSeeder extends Seeder
                 'description' => 'Kuota cuti tahunan (hari)',
             ],
             [
-                'key' => 'sick_leave_quota',
+                'key' => 'permit_quota',
                 'value' => '12',
                 'type' => 'integer',
-                'description' => 'Kuota cuti sakit (hari)',
+                'description' => 'Kuota cuti sakit atau izin (hari)',
             ],
             [
                 'key' => 'photo_required_clock_in',

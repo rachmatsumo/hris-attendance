@@ -34,29 +34,31 @@
                                     <td class="v-middle">{{ $a->lat_long }}</td>
                                     <td class="v-middle">{{ $a->radius }}km</td> 
                                     <td>
-                                          <button class="btn btn-sm btn-primary openModalInputBtn editDataBtn"
+                                      <div class="d-flex">
+                                        <button class="btn btn-sm btn-light openModalInputBtn editDataBtn me-2"
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#modalInput"
                                                 method="put"
                                                 title="Edit Area Kerja"
                                                 data-id="{{ $a->id }}"
                                                 data-url="{{ route('location.update', $a->id) }}">
-                                            Edit
+                                            <i class="bi bi-pencil"></i>
                                         </button>
 
                                         <!-- Tombol Hapus -->
                                         <form action="{{ route('location.destroy', $a->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Yakin hapus?')">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-danger">Hapus</button>
+                                            <button type="submit" class="btn btn-sm btn-danger"><i class="bi bi-trash2"></i></button>
                                         </form>
+                                      </div>
                                     </td> 
                                 </tr>
                                 @endforeach
                             </tbody>
                         </table>
                     </div>
-                    <div class="pagination justify-content-center mt-3"> 
+                    <div class="pagination flex-column justify-content-center mt-3"> 
                         {{ $work_locations->links('pagination::bootstrap-5') }}
                     </div>
                 
@@ -115,19 +117,19 @@
 
 <script>
     document.addEventListener('click', function(e) {
-        if(e.target && e.target.classList.contains('editDataBtn')) {
-            const id = e.target.dataset.id;
+        const btn = e.target.closest('.editDataBtn');
+        if(btn) {
+            const id = btn.dataset.id;
             const url = `/location/${id}`; // route show bisa dikustom
             const form = document.getElementById('inputForm');
             const methodField = document.getElementById('methodField');
 
-            
             fetch(url)
             .then(res => res.json())
             .then(data => {
               console.log(data);
               // Set action form dan method
-                    form.action = e.target.dataset.url;
+                    form.action = url;
                     methodField.innerHTML = '@method("PUT")';
 
                     // Isi field

@@ -5,16 +5,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-
+use Carbon\Carbon;
 class AttendancePermit extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'user_id',
-        'date',
-        'type',
-        'requested_time',
+        'start_date',
+        'end_date',
+        'total_day',
+        'type', 
         'reason',
         'attachment',
         'status',
@@ -24,8 +25,7 @@ class AttendancePermit extends Model
     ];
 
     protected $casts = [
-        'date' => 'date',
-        'requested_time' => 'datetime:H:i:s',
+        // 'date' => 'date', 
         'approved_at' => 'datetime',
     ];
 
@@ -57,11 +57,66 @@ class AttendancePermit extends Model
             'late_arrival' => 'Terlambat Masuk',
             'early_departure' => 'Pulang Cepat',
             'sick_during_work' => 'Sakit Saat Kerja',
-            'urgent_leave' => 'Izin Mendadak'
+            'urgent_leave' => 'Izin Mendadak',
+            'leave' => 'Cuti'
         ];
         
         return $types[$this->type] ?? $this->type;
     }
+
+    public function getStatusNameAttribute()
+    {
+        $status = [
+            'pending' => 'Tertunda',
+            'rejected' => 'Ditolak',
+            'approved' => 'Disetujui', 
+        ];
+        
+        return $status[$this->status] ?? $this->status;
+    }
+
+    public function getStatusBadgeAttribute()
+    {
+        $map = [
+            'rejected' => 'danger',
+            'approved' => 'success',
+            'pending'  => 'warning',
+            'withdraw'  => 'secondary',
+        ];
+
+        $color = $map[$this->status] ?? 'secondary';
+
+        return '<span class="badge bg-' . $color . '">' . ucfirst($this->status) . '</span>';
+    }
+
+    public function getPeriodeLocaleAttribute()
+    { 
+        \Carbon\Carbon::setLocale('id');
+
+        $start = \Carbon\Carbon::parse($this->start_date);
+        $end   = \Carbon\Carbon::parse($this->end_date);
+
+        // Format default (tanpa tahun)
+        $startFmt = $start->translatedFormat('d F');
+        $endFmt   = $end->translatedFormat('d F');
+
+        // Kalau satu hari
+        if ($start->equalTo($end)) {
+            return $start->translatedFormat('d F Y');
+        }
+
+        // Kalau beda tahun
+        if ($start->year !== $end->year) {
+            $startFmt = $start->translatedFormat('d F Y');
+            $endFmt   = $end->translatedFormat('d F Y');
+        } else {
+            // Tambah tahun hanya di akhir rentang
+            $endFmt .= ' ' . $end->year;
+        }
+
+        return $startFmt . ' - ' . $endFmt;
+    }
+
 
     public function getAttachmentUrlAttribute()
     {

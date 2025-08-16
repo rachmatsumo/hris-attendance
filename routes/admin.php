@@ -27,6 +27,8 @@ Route::resource('location', LocationController::class)->only('index', 'store', '
 Route::resource('working-time', WorkingTimeController::class)->only('index', 'store', 'show', 'update', 'destroy'); 
 
 // RESOURCE MANAGEMENT ROUTES
+Route::get('recap-attendance/export/daily', [RecapAttendanceController::class, 'exportDaily'])->name('recap-attendance.export.daily');
+Route::get('recap-attendance/export/monthly', [RecapAttendanceController::class, 'exportMonthly'])->name('recap-attendance.export.monthly');
 Route::resource('recap-attendance', RecapAttendanceController::class)->only('index', 'store', 'show', 'update', 'destroy'); 
 Route::resource('payroll', PayrollController::class)->only('index', 'store', 'show', 'update', 'destroy'); 
 

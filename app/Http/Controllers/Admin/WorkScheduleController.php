@@ -15,18 +15,16 @@ use Maatwebsite\Excel\Facades\Excel;
 class WorkScheduleController extends Controller
 {
     public function index(Request $request)
-    {
-        // $employees = User::with('workSchedules')->get();
-        // return view('admin.resource_management.work_schedule', compact('employees'));
-        $month = $request->month ?? date('Y-m'); 
-        // Ambil data work_schedule grouped by bulk_id
+    { 
+        $month = $request->month ?? date('Y-m');   
+
         $bulkSchedules = WorkSchedule::select('bulk_id')
             ->whereYear('work_date', explode('-', $month)[0])
             ->whereMonth('work_date', explode('-', $month)[1])
             ->groupBy('bulk_id')
-            ->get();
-
-        $data = $bulkSchedules->map(function($bulk) {
+            ->paginate(10); 
+            
+        $data = $bulkSchedules->getCollection()->map(function ($bulk) {
             $schedules = WorkSchedule::with('user', 'workingTime')
                 ->where('bulk_id', $bulk->bulk_id)
                 ->get();
@@ -44,16 +42,18 @@ class WorkScheduleController extends Controller
             $lastDay  = $schedules->sortBy('work_date')->last();
 
             return [
-                'bulk_id' => $bulk->bulk_id,
-                'karyawan' => $users->implode(', '),
-                'total_hari_kerja' => (int)$totalHariKerjaPerUser,
-                'total_hari_libur' => (int)$totalHariLiburPerUser,
-                'hari_pertama' => $firstDay ? ($firstDay->workingTime?->name ?? 'Libur') : null,
-                'hari_terakhir' => $lastDay ? ($lastDay->workingTime?->name ?? 'Libur') : null,
+                'bulk_id'        => $bulk->bulk_id,
+                'karyawan'       => $users->implode(', '),
+                'total_hari_kerja' => (int) $totalHariKerjaPerUser,
+                'total_hari_libur' => (int) $totalHariLiburPerUser,
+                'hari_pertama'   => $firstDay ? ($firstDay->workingTime?->name ?? 'Libur') : null,
+                'hari_terakhir'  => $lastDay ? ($lastDay->workingTime?->name ?? 'Libur') : null,
             ];
         });
+ 
+        $bulkSchedules->setCollection($data); 
 
-        return view('admin.resource_management.work_schedule', compact('data', 'month'));
+        return view('admin.resource_management.work_schedule', compact('bulkSchedules', 'month'));
     }
 
     public function show($bulk_id)
