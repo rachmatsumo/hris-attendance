@@ -12,6 +12,7 @@ class WorkScheduleSeeder extends Seeder
 {
     public function run(): void
     {
+        $bulk_id = md5(now());
         $users = User::whereIn('role', ['employee', 'hr'])->get();
 
         // Ambil semua shift
@@ -52,6 +53,7 @@ class WorkScheduleSeeder extends Seeder
                     'work_date'       => $date->toDateString(),
                     'working_time_id' => $workingTimeId,
                     'is_active'       => $workingTimeId !== null,
+                    'bulk_id'         => $bulk_id,
                     'created_at'      => now(),
                     'updated_at'      => now(),
                 ];
