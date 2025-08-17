@@ -2,100 +2,106 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
+        $counter = 1065601; // mulai employee_id
+
         // Super Admin
-        User::create([
-            'employee_id' => 'ADM001',
-            'name' => 'Super Admin',
-            'email' => 'admin@hris.com',
-            'password' => Hash::make('password123'),
-            'role' => 'admin',
-            'position_id' => 1,
-            'phone' => '08123456789',
-            'join_date' => '2024-01-01',
-            'salary_per_day' => 0,
-            'meal_allowance' => 0,
-            'is_active' => true,
-        ]);
+        User::updateOrCreate(
+            ['email' => 'admin@hris.com'],
+            [
+                'employee_id' => $counter++,
+                'name' => 'Super Admin',
+                'password' => Hash::make('password123'),
+                'role' => 'admin',
+                'position_id' => 1,
+                'gender' => 'male',
+                'phone' => '08123456789',
+                'join_date' => '2024-01-01', 
+                'is_active' => true,
+            ]
+        );
 
         // HR Manager
-        User::create([
-            'employee_id' => 'HR001',
-            'name' => 'HR Manager',
-            'email' => 'hr@hris.com',
-            'password' => Hash::make('password123'),
-            'role' => 'hr',
-            'position_id' => 1,
-            'phone' => '08123456790',
-            'join_date' => '2024-01-01',
-            'salary_per_day' => 500000,
-            'meal_allowance' => 25000,
-            'is_active' => true,
-        ]);
+        User::updateOrCreate(
+            ['email' => 'hr@hris.com'],
+            [
+                'employee_id' => $counter++,
+                'name' => 'HR Manager',
+                'password' => Hash::make('password123'),
+                'role' => 'hr',
+                'position_id' => 1,
+                'gender' => 'female',
+                'phone' => '08123456790',
+                'join_date' => '2024-01-01', 
+                'is_active' => true,
+            ]
+        );
 
-        // Sample Employees
-        $employees = [
-            [
-                'employee_id' => 'IT001',
-                'name' => 'John Doe',
-                'email' => 'john.doe@hris.com',
-                'position_id' => 2,
-                'salary_per_day' => 400000,
-                'meal_allowance' => 20000,
-            ],
-            [
-                'employee_id' => 'IT002',
-                'name' => 'Jane Smith',
-                'email' => 'jane.smith@hris.com',
-                'position_id' => 2,
-                'salary_per_day' => 450000,
-                'meal_allowance' => 20000,
-            ],
-            [
-                'employee_id' => 'FA001',
-                'name' => 'Michael Johnson',
-                'email' => 'michael.johnson@hris.com',
-                'position_id' => 3,
-                'salary_per_day' => 380000,
-                'meal_allowance' => 18000,
-            ],
-            [
-                'employee_id' => 'MKT001',
-                'name' => 'Sarah Wilson',
-                'email' => 'sarah.wilson@hris.com',
-                'position_id' => 4,
-                'salary_per_day' => 350000,
-                'meal_allowance' => 17000,
-            ],
-            [
-                'employee_id' => 'OPS001',
-                'name' => 'David Brown',
-                'email' => 'david.brown@hris.com',
-                'position_id' => 5,
-                'salary_per_day' => 300000,
-                'meal_allowance' => 15000,
-            ],
+        $departments = [
+            1 => 'Human Resources',
+            2 => 'Information Technology',
+            3 => 'Finance & Accounting',
+            4 => 'Marketing',
+            5 => 'Operations',
         ];
 
-        foreach ($employees as $employee) {
-            User::create(array_merge($employee, [
-                'password' => Hash::make('password123'),
-                'role' => 'employee',
-                'phone' => '0812345679' . rand(10, 99),
-                'join_date' => '2024-01-15',
-                'is_active' => true,
-            ]));
+        $positionsTemplate = [
+            ['name' => 'Manager', 'level_id' => 3, 'count' => 1],
+            ['name' => 'Assistant Manager', 'level_id' => 4, 'count' => 1],
+            ['name' => 'Supervisor', 'level_id' => 5, 'count' => 1],
+            ['name' => 'Staff', 'level_id' => 6, 'count' => 2],
+            ['name' => 'Magang', 'level_id' => 8, 'count' => 1],
+        ];
+
+        $firstNames = ['John', 'Jane', 'Michael', 'Sarah', 'David', 'Emily', 'Robert', 'Linda', 'James', 'Jessica'];
+        $lastNames  = ['Doe', 'Smith', 'Johnson', 'Wilson', 'Brown', 'Taylor', 'Anderson', 'Thomas', 'Jackson', 'White'];
+
+        $emailsUsed = [];
+        $phonesUsed = [];
+
+        foreach ($departments as $deptId => $deptName) {
+            foreach ($positionsTemplate as $position) {
+                for ($i = 1; $i <= $position['count']; $i++) {
+                    // Ambil nama random
+                    $firstName = $firstNames[array_rand($firstNames)];
+                    $lastName  = $lastNames[array_rand($lastNames)];
+                    $fullName  = "$firstName $lastName";
+
+                    // Generate email unik
+                    do {
+                        $email = strtolower(str_replace(' ', '.', $fullName)) . rand(1, 99) . '@hris.com';
+                    } while (in_array($email, $emailsUsed));
+                    $emailsUsed[] = $email;
+
+                    // Generate phone unik
+                    do {
+                        $phone = '0812345' . rand(1000, 9999);
+                    } while (in_array($phone, $phonesUsed));
+                    $phonesUsed[] = $phone;
+
+                    User::updateOrCreate(
+                        ['email' => $email],
+                        [
+                            'employee_id' => $counter++, // incremental
+                            'name' => $fullName,
+                            'password' => Hash::make('password123'),
+                            'role' => 'employee',
+                            'position_id' => $position['level_id'],
+                            'gender' => rand(0,1) ? 'male' : 'female',
+                            'phone' => $phone,
+                            'join_date' => now()->subMonths(rand(1,12))->format('Y-m-d'),
+                            'is_active' => true,
+                        ]
+                    );
+                }
+            }
         }
     }
 }

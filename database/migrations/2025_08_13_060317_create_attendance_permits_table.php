@@ -27,7 +27,7 @@ return new class extends Migration
             
             $table->timestamps();
             
-            $table->index(['status', 'date']);
+            $table->index(['status']);
         });
     }
 

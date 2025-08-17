@@ -23,7 +23,7 @@
                                 <tr> 
                                     <th class="v-middle">Divisi</th>
                                     <th class="v-middle">Jabatan</th>
-                                    <th class="v-middle">THP</th>
+                                    <th class="v-middle">THP (Bruto)</th>
                                     <th class="v-middle">Option</th>
                                 </tr>
                             </thead>
@@ -32,7 +32,7 @@
                                 <tr> 
                                     <td class="v-middle">{{ $a->department->name }}</td>
                                     <td class="v-middle">{{ $a->name }}</td>
-                                    <td class="v-middle">{{ number_format(optional($a->salary)->net_salary) }}</td>
+                                    <td class="v-middle">{{ number_format($a->bruto ?? 0) }}</td>
                                     <td>
                                         <div class="d-flex">
                                          <!-- Tombol Edit -->
@@ -91,18 +91,23 @@
             </div>
 
             <div class="mb-3">
-                <label for="department_id" class="form-label">Departemen</label>
+                <label for="department_id" class="form-label">Divisi</label>
                 <select class="form-select" id="department_id" name="department_id" required>
-                <option value="" selected disabled>Pilih Departemen</option>
-                @foreach($departments as $department)
-                    <option value="{{ $department->id }}">{{ $department->name }}</option>
-                @endforeach
+                <option value="" selected disabled>Pilih Divisi</option>
+                    @foreach($departments as $department)
+                        <option value="{{ $department->id }}">{{ $department->name }}</option>
+                    @endforeach
                 </select>
             </div>
 
             <div class="mb-3">
-                <label for="code" class="form-label">Kode Jabatan</label>
-                <input type="text" class="form-control" id="code" name="code" required>
+                <label for="level_id" class="form-label">Level</label>
+                <select class="form-select" id="level_id" name="level_id" required>
+                <option value="" selected disabled>Pilih Level</option>
+                    @foreach($levels as $level)
+                        <option value="{{ $level->id }}">{{ $level->name }}</option>
+                    @endforeach
+                </select>
             </div>
 
             <div class="mb-3"> 
@@ -142,7 +147,7 @@
                     // Isi field
                     form.querySelector('#name').value = data.name;
                     form.querySelector('#department_id').value = data.department_id;
-                    form.querySelector('#code').value = data.code;
+                    form.querySelector('#level_id').value = data.level_id;
                     form.querySelector('#is_active').value = data.is_active;
  
                 })

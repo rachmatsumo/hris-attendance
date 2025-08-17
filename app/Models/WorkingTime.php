@@ -42,4 +42,13 @@ class WorkingTime extends Model
     {
         return \Carbon\Carbon::parse($value)->format('H:i');
     }
+
+    public function getScheduleAttribute()
+    {
+        // Format jam:menit dari start_time dan end_time
+        $start = \Carbon\Carbon::parse($this->start_time)->format('H:i');
+        $end = \Carbon\Carbon::parse($this->end_time)->format('H:i');
+
+        return "{$start} - {$end}";
+    }
 }

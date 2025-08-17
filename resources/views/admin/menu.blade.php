@@ -40,6 +40,14 @@
                 </a>
             </li> 
             <li>
+                <a href="{{ route('holiday.index') }}">
+                    <div>
+                        <span class="mb-0"><i class="bi bi-calendar-date mb-0"></i></span> Hari Libur
+                    </div>
+                    <i class="bi bi-chevron-compact-right"></i>
+                </a>
+            </li> 
+            <li>
                 <a href="{{ route('working-time.index') }}">
                     <div>
                         <span class="mb-0"><i class="bi bi-clock mb-0"></i></span> Jam Kerja
@@ -48,9 +56,9 @@
                 </a>
             </li> 
             <li>
-                <a href="{{ route('holiday.index') }}">
+                <a href="{{ route('level.index') }}">
                     <div>
-                        <span class="mb-0"><i class="bi bi-calendar-date mb-0"></i></span> Hari Libur
+                        <span class="mb-0"><i class="bi bi-diagram-2 mb-0"></i></span> Level Karyawan
                     </div>
                     <i class="bi bi-chevron-compact-right"></i>
                 </a>
@@ -70,9 +78,17 @@
                   <h6 class="ms-3">Resource Management</h6>
             </span>
             <li>
+                <a href="{{ route('attendance-permit-admin.index') }}">
+                    <div>
+                        <span class="mb-0"><i class="bi bi-calendar2-check mb-0"></i></span> Cuti & Izin
+                    </div>
+                    <i class="bi bi-chevron-compact-right"></i>
+                </a>
+            </li> 
+            <li>
                 <a href="{{ route('work-schedule.index') }}">
                     <div>
-                        <span class="mb-0"><i class="bi bi-calendar-week mb-0"></i></span> Jadwal Kerja
+                        <span class="mb-0"><i class="bi bi-calendar2-week mb-0"></i></span> Jadwal Kerja
                     </div>
                     <i class="bi bi-chevron-compact-right"></i>
                 </a>

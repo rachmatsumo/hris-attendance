@@ -56,15 +56,31 @@
                             </thead>
                             <tbody>
                                 @php $no = 1; @endphp
-                                @forelse($recap_attendances as $a)
+                                @forelse($recap_attendances as $a) 
                                 <tr>
                                     <td class="v-middle">{{ $no++ }}</td>
-                                    <td class="v-middle">{{ date('Y-m-d', strtotime($a->date)) }}</td>
+                                    <td class="v-middle">{{ date('Y-m-d', strtotime($a->work_date)) }}</td>
                                     <td class="v-middle">{{ $a->user->id }}</td>
                                     <td class="v-middle">{{ $a->user->name }}</td>
-                                    <td class="v-middle">{{ $a?->workSchedule?->workingTime?->start_time }} - {{ $a?->workSchedule?->workingTime?->end_time }}</td>
-                                    <td class="v-middle">{{ $a->clock_in_time }} @if($a->clock_in_time)<button class="btn btn-secondary btn-light btn-sm evidenceBtn" data-url="{{ $a->clock_in_photo }}"><i class="bi bi-eye"></i></button> @endif</td> 
-                                    <td class="v-middle">{{ $a->clock_out_time }} @if($a->clock_out_time)<button class="btn btn-secondary btn-light btn-sm evidenceBtn" data-url="{{ $a->clock_out_photo }}"><i class="bi bi-eye"></i></button> @endif</td>  
+                                    <td class="v-middle">{{ $a?->workingTime?->schedule }}</td>
+                                    <td class="v-middle">{{ $a->attendance?->clock_in_time ?? '-' }} 
+                                                            @if($a->attendance?->clock_in_time)
+                                                                <button 
+                                                                    class="btn btn-secondary btn-light btn-sm evidenceBtn" 
+                                                                    data-url="{{ $a->attendance?->clock_in_photo }}">
+                                                                        <i class="bi bi-eye"></i>
+                                                                    </button> 
+                                                            @endif
+                                    </td> 
+                                    <td class="v-middle">{{ $a->attendance?->clock_out_time ?? '-'}} 
+                                                            @if($a->attendance?->clock_out_time)
+                                                            <button 
+                                                                class="btn btn-secondary btn-light btn-sm evidenceBtn" 
+                                                                data-url="{{ $a->attendance?->clock_out_photo }}">
+                                                                <i class="bi bi-eye"></i>
+                                                            </button> 
+                                                            @endif
+                                    </td>  
                                     <td class="v-middle">{{ ucwords($a->status) }}</td> 
                                     <td>
                                         
@@ -139,8 +155,8 @@
 
 
     $(document).on('click', '.evidenceBtn', function(){
-        var dataUrl = $(this).data('url'); // gunakan data-url attribute
-        var baseUrl = "{{ asset('') }}"; // Blade asset dijadikan string JS
+        var dataUrl = $(this).data('url');  
+        var baseUrl = "{{ asset('') }}";  
 
         $('#evidenceModal').modal('show');
 

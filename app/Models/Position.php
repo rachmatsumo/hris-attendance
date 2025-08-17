@@ -13,7 +13,8 @@ class Position extends Model
     protected $fillable = [
         'name',
         'department_id',
-        'code',
+        'level_id',
+        // 'code',
         'is_active',
     ];
     
@@ -27,13 +28,8 @@ class Position extends Model
         return $this->belongsTo(Department::class);
     }
 
-    public function salary()
+    public function incomes()
     {
-        return $this->hasOne(Salary::class, 'position_id');
+        return $this->hasMany(Income::class, 'level_id', 'level_id');
     }
-
-    // public function salary()
-    // {
-    //     return $this->hasOne(Salary::class);
-    // }
 }

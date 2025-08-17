@@ -5,6 +5,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\Cache;
 
 class Setting extends Model
 {
@@ -16,6 +17,19 @@ class Setting extends Model
         'type',
         'description'
     ];
+
+    protected static function booted()
+    {
+        static::saved(function ($setting) {
+            // Hapus cache untuk key ini setelah update atau create
+            Cache::forget("setting_{$setting->key}");
+        });
+
+        static::deleted(function ($setting) {
+            // Hapus cache juga jika dihapus
+            Cache::forget("setting_{$setting->key}");
+        });
+    }
 
     public function getValueAttribute($value)
     {

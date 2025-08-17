@@ -8,10 +8,10 @@
                 <div class="card-body">
 
                     {{-- Tombol Back di atas --}}
-                    <div class="mb-3 d-flex justify-content-between align-items-center">
-                        <a href="{{ route('admin.index') }}" class="btn btn-link p-0">
+                    <div class="mb-3 d-flex justify-content-end align-items-center">
+                        {{-- <a href="{{ route('admin.index') }}" class="btn btn-link p-0">
                             <i class="bi bi-arrow-left"></i>
-                        </a>
+                        </a> --}}
                         <a class="btn btn-light openModalInputBtn" href="#modalInput" data-bs-toggle="modal" method="post" data-url="{{ route('attendance-permit.store') }}" title="Buat Permohonan Cuti/Izin" data-id=""><i class="bi bi-plus"></i></a>               
                     </div>
                     <div class="d-flex justify-content-between align-items-center w-100 border-bottom py-2">
@@ -21,7 +21,7 @@
                         <div class="row d-flex justify-content-between align-items-center">
                             <div class="order-2 order-md-1 mb-2 col-12 col-md-4 col-lg-3">
                                 <div class="input-group">
-                                    <input type="number" id="year" name="year" value="{{ date('Y') }}" class="form-control">
+                                    <input type="number" id="year" name="year" value="{{ $year }}" class="form-control">
                                     <button type="submit" class="btn btn-primary btn-sm">Filter</button>
                                 </div>    
                             </div>    
@@ -38,9 +38,9 @@
                                     <th class="v-middle">Jenis</th>
                                     <th class="v-middle">Periode</th> 
                                     <th class="v-middle">Status</th>
+                                    <th class="v-middle">Alasan</th>
+                                    <th class="v-middle">Approve/Reject by</th>
                                     <th class="v-middle">Notes</th>
-                                    <th class="v-middle">Approver</th>
-                                    <th class="v-middle">Notes Approver</th>
                                     <th class="v-middle">Dibuat</th>
                                     <th class="v-middle">Option</th>
                                 </tr>
@@ -115,7 +115,7 @@
         <div class="modal-body">
 
             <div class="mb-3">
-                <label for="type" class="form-label">Jenis</label>
+                <label for="type" class="form-label">Jenis Permohonan</label>
                 <select class="form-select" id="type" name="type" onChange="changeForm();" required>
                     <option value="">::Pilih Jenis Cuti / Izin::</option>
                     <option value="late_arrival">Terlambat Masuk</option>

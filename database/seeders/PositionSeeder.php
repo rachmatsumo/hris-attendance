@@ -12,16 +12,23 @@ class PositionSeeder extends Seeder
      */
     public function run(): void
     {
-        $positions = [
-            ['name' => 'Manager', 'code' => 'POS001', 'department_id' => 1],
-            ['name' => 'Assistant Manager', 'code' => 'POS002', 'department_id' => 2],
-            ['name' => 'Supervisor', 'code' => 'POS003', 'department_id' => 3],
-            ['name' => 'Staff', 'code' => 'POS004', 'department_id' => 4],
-            ['name' => 'Intern', 'code' => 'POS005', 'department_id' => 5],
+        $departments = range(1, 5);  
+        $positionsTemplate = [
+            ['name' => 'Manager', 'level_id' => 3],
+            ['name' => 'Assistant Manager', 'level_id' => 4],
+            ['name' => 'Supervisor', 'level_id' => 5],
+            ['name' => 'Staff', 'level_id' => 6],
+            ['name' => 'Magang', 'level_id' => 8],
         ];
 
-        foreach ($positions as $position) {
-            Position::create($position);
+        foreach ($departments as $deptId) {
+            foreach ($positionsTemplate as $pos) {
+                Position::create([
+                    'name' => $pos['name'],
+                    'department_id' => $deptId,
+                    'level_id' => $pos['level_id'],
+                ]);
+            }
         }
     }
 }

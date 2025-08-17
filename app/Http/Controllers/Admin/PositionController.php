@@ -6,15 +6,23 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Position;
 use App\Models\Department;
+use App\Models\Level;
 
 class PositionController extends Controller
 {
     public function index()
     { 
-        $positions = Position::with(['department', 'salary'])->paginate(10);
-        $departments = Department::orderBy('name', 'asc')->get(); 
-        
-        return view('admin.master_data.position_list', compact('positions', 'departments')); 
+        $positions = Position::with('department')
+            ->withSum(['incomes as bruto' => function($query) {
+                $query->where('is_active', 1)
+                    ->where('category', 'base');
+            }], 'value') // sum kolom 'value' dari incomes
+            ->paginate(10);
+
+        $departments = Department::orderBy('name', 'asc')->get();
+        $levels = Level::orderBy('grade', 'asc')->get();
+
+        return view('admin.master_data.position_list', compact('positions', 'departments', 'levels'));
     }
 
     public function store(Request $request)
@@ -22,7 +30,8 @@ class PositionController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'department_id' => 'required|exists:departments,id',
-            'code' => 'required|string|max:50|unique:positions,code',
+            'level_id' => 'required|exists:levels,id',
+            // 'code' => 'required|string|max:50|unique:positions,code',
             'is_active' => 'nullable|boolean',
         ]);
 
@@ -31,7 +40,7 @@ class PositionController extends Controller
         $position = Position::create([
             'name' => $validated['name'],
             'department_id' => $validated['department_id'],
-            'code' => $validated['code'],
+            'level_id' => $validated['level_id'],
             'is_active' => (int) $isActive,
         ]);
 
@@ -59,7 +68,8 @@ class PositionController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'department_id' => 'required|exists:departments,id',
-            'code' => 'required|string|max:50|unique:positions,code,' . $position->id,
+            'level_id' => 'required|exists:levels,id',
+            // 'code' => 'required|string|max:50|unique:positions,code,' . $position->id,
             'is_active' => 'nullable|boolean',
         ]);
 
@@ -68,7 +78,7 @@ class PositionController extends Controller
         $position->update([
             'name' => $validated['name'],
             'department_id' => $validated['department_id'],
-            'code' => $validated['code'],
+            'level_id' => $validated['level_id'],
             'is_active' => (int) $isActive,
         ]);
 

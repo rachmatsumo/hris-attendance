@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Models\Attendance;
+use App\Models\WorkSchedule;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
@@ -22,20 +23,38 @@ class MonthlyRecapAttendanceExport implements FromCollection, WithHeadings, With
         $this->month = $month;
     }
 
+    public function title(): string
+    {
+        return 'Detail';
+    }
+
     public function collection()
     {
         $start = now()->createFromFormat('Y-m', $this->month)->startOfMonth();
         $end = now()->createFromFormat('Y-m', $this->month)->endOfMonth();
 
-        return Attendance::with([
-                'user.department',
-                'user.position',
-                'workSchedule.workingTime'
-            ])
-            ->whereBetween('date', [$start, $end])
-            ->orderBy('date')
-            ->orderBy('user_id')
-            ->get();
+        // return Attendance::with([
+        //         'user.department',
+        //         'user.position',
+        //         'workSchedule.workingTime'
+        //     ])
+        //     ->whereBetween('date', [$start, $end])
+        //     ->orderBy('date')
+        //     ->orderBy('user_id')
+        //     ->get();
+        return WorkSchedule::with([
+                                    'user.department',
+                                    'user.position',
+                                    'workingTime',
+                                    'attendance' => function($q) use ($start, $end) {
+                                        $q->whereBetween('date', [$start, $end]);
+                                    }
+                                ])
+                                ->whereBetween('work_date', [$start, $end])
+                                ->whereNotNull('working_time_id')
+                                ->orderBy('work_date')
+                                ->get();
+
     }
 
     public function headings(): array
@@ -56,25 +75,38 @@ class MonthlyRecapAttendanceExport implements FromCollection, WithHeadings, With
 
     public function map($attendance): array
     {
-        $user = $attendance->user;
-        $workingTime = $attendance->workSchedule?->workingTime;
+        // $user = $attendance->user;
+        // $workingTime = $attendance->workSchedule?->workingTime;
 
-        $jadwal = $workingTime 
-            ? $workingTime->start_time . ' - ' . $workingTime->end_time 
-            : '-';
+        // $jadwal = $attendance->workingTime->schedule; 
 
-        return [
-            $this->counter++,                          // No
-            $attendance->date->format('Y-m-d'),        // Tanggal
-            $user->employee_id ?? '-',                 // ID Pegawai
-            $user->name ?? '-',                         // Nama
-            $user->department?->name ?? '-',           // Divisi
-            $user->position?->name ?? '-',             // Jabatan
-            $jadwal,                                   // Jadwal Kerja
-            $attendance->clock_in_time ?? '-',         // Clock In
-            $attendance->clock_out_time ?? '-',        // Clock Out
-            $attendance->status ?? '-',                // Status
-        ];
+        // // Cek attendancePermit terkait user untuk bulan ini
+        // $permit = $attendance->user->attendancePermits()
+        //                 ->where('status', 'approved')
+        //                 ->whereDate('start_date', '<=', $attendance->work_date)
+        //                 ->whereDate('end_date', '>=', $attendance->work_date)
+        //                 ->first();
+
+        // if ($permit) {
+        //     // $jadwal = $permit->type === 'leave' ? 'Cuti' : 'Izin';
+        //     $status = $permit->type === 'leave' ? 'Cuti' : 'Izin';
+        // } else {
+        //     $status = $attendance?->attendance->status ?? 'Tidak Hadir';
+        // }
+
+        // return [
+        //     $this->counter++,                          // No
+        //     $attendance->date,        // Tanggal
+        //     $user->employee_id ?? '-',                 // ID Pegawai
+        //     $user->name ?? '-',                         // Nama
+        //     $user->department?->name ?? '-',           // Divisi
+        //     $user->position?->name ?? '-',             // Jabatan
+        //     $jadwal,                                   // Jadwal Kerja
+        //     $attendance?->attendance->clock_in_time ?? '-',
+        //     $attendance?->attendance->clock_out_time ?? '-',
+        //     ucwords($status),                                   // Status
+        // ];
+        return [];
     }
 
     public function registerEvents(): array
@@ -118,21 +150,34 @@ class MonthlyRecapAttendanceExport implements FromCollection, WithHeadings, With
                 foreach($collection as $rowIndex => $attendance) {
                     $user = $attendance->user;
                     $workingTime = $attendance->workSchedule?->workingTime;
-                    $jadwal = $workingTime 
-                        ? $workingTime->start_time . ' - ' . $workingTime->end_time 
-                        : '-';
+                    $jadwal = $attendance->workingTime->schedule; 
+                    // dd($attendance);
+
+                    // Cek attendancePermit terkait user untuk bulan ini
+                    $permit = $attendance->user->attendancePermits()
+                                    ->where('status', 'approved')
+                                    ->whereDate('start_date', '<=', $attendance->work_date)
+                                    ->whereDate('end_date', '>=', $attendance->work_date)
+                                    ->first();
+
+                    if ($permit) {
+                        // $jadwal = $permit->type === 'leave' ? 'Cuti' : 'Izin';
+                        $status = $permit->type === 'leave' ? 'Cuti' : 'Izin';
+                    } else {
+                        $status = $attendance?->attendance->status ?? 'Tidak Hadir';
+                    }
                     
                     $rowData = [
                         $counter++,
-                        $attendance->date->format('Y-m-d'),
+                        $attendance->work_date,
                         $user->employee_id ?? '-',
                         $user->name ?? '-',
                         $user->department?->name ?? '-',
                         $user->position?->name ?? '-',
                         $jadwal,
-                        $attendance->clock_in_time ?? '-',
-                        $attendance->clock_out_time ?? '-',
-                        $attendance->status ?? '-',
+                        $attendance?->attendance->clock_in_time ?? '-',
+                        $attendance?->attendance->clock_out_time ?? '-',
+                        ucwords($status),
                     ];
                     
                     foreach($rowData as $colIndex => $value) {

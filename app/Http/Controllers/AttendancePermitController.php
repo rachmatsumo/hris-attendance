@@ -25,7 +25,7 @@ class AttendancePermitController extends Controller
 
         // dd($data);
 
-        return view('attendance_permits.attendance_permits', compact('data', 'leavePermits'));
+        return view('attendance_permits.attendance_permits', compact('data', 'leavePermits', 'year'));
     }
 
     public function quotaCheck(Request $request)
@@ -91,7 +91,7 @@ class AttendancePermitController extends Controller
             'end_date'   => $end->format('Y-m-d'),
             'total_day'  => $totalDay,
             'reason'     => $validated['reason'] ?? null,
-            'evidence'   => $evidencePath,
+            'attachment'   => $evidencePath,
             'status'     => 'pending'
         ]);
 
@@ -99,18 +99,15 @@ class AttendancePermitController extends Controller
     }
 
     public function show($id)
-    {
-        // Ambil data berdasarkan ID
+    { 
         $data = AttendancePermit::find($id);
-
-        // Jika data tidak ditemukan, kembalikan error 404 JSON
+ 
         if (!$data) {
             return response()->json([
                 'message' => 'Data tidak ditemukan'
             ], 404);
         }
-
-        // Kembalikan data dalam format JSON
+ 
         return response()->json($data);
     }
 
@@ -128,7 +125,7 @@ class AttendancePermitController extends Controller
             'status' => 'withdraw'
         ]);
 
-        return redirect()->back()->with('success', 'Data berhasil dihapus.');
+        return redirect()->back()->with('success', 'Permohonan dibatalkan.');
     }
 
     public function update(Request $request, $id)
@@ -182,7 +179,7 @@ class AttendancePermitController extends Controller
             'end_date'   => $end->format('Y-m-d'),
             'total_day'  => $totalDay,
             'reason'     => $validated['reason'] ?? null,
-            'evidence'   => $evidencePath,
+            'attachment'   => $evidencePath,
             // status tetap biarkan apa adanya, jangan diubah ke pending lagi
         ]);
 

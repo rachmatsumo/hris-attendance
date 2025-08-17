@@ -7,11 +7,14 @@
     <meta name="author" content="{{ config('app.author', 'Abdul Rachmat') }}"> 
     <meta name="description" content="{{ config('app.description', 'Human Resources Information System') }}">
     <meta name="keywords" content="HRIS, absensi, attendance, izin, employee, karyawan, management">
+    
+    <link rel="icon" type="image/png" href="{{ asset('logo.png') }}"> 
+    <link rel="apple-touch-icon" href="{{ asset('logo.png') }}">
 
     <!-- CSRF Token -->
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}"> 
 
-    <title>{{ config('app.name', 'HRIS') }}</title>
+    <title>{{ setting('company_name') }} - Human Resource Information System</title>
 
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.bunny.net">
@@ -27,6 +30,13 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/id.js"></script>
+
+    <!-- SweetAlert2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+
 </head>
 <body>
      <div id="loader-overlay">
@@ -39,7 +49,7 @@
         <nav class="navbar navbar-top navbar-expand-md navbar-light bg-gradient-blue border-none">
             <div class="container-fluid px-4 flex-column align-items-start">
                 <a class="navbar-brand text-white fs-6 mb-2" href="{{ url('/') }}">
-                    {{ config('app.name', 'Laravel') }}
+                   {{ setting('company_name') }} - {{ config('app.name', 'Laravel') }}
                 </a>
 
                 <div class="d-flex justify-content-between py-2 w-100">
@@ -85,7 +95,8 @@
                                         request()->routeIs('working-time.*') ||
                                         request()->routeIs('setting.*') ||
                                         request()->routeIs('payroll.*') ||
-                                        request()->routeIs('recap-attendance.*')
+                                        request()->routeIs('recap-attendance.*') ||
+                                        request()->routeIs('attendance-permit-admin.*')
                                         
                                         ? 'active' : '' }}">
                         <i class="bi bi-device-hdd"></i>

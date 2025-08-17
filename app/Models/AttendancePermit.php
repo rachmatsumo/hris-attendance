@@ -10,6 +10,10 @@ class AttendancePermit extends Model
 {
     use HasFactory;
 
+    protected $table = 'attendance_permits';
+ 
+    protected $appends = ['periode_locale', 'type_name', 'user_info'];
+
     protected $fillable = [
         'user_id',
         'start_date',
@@ -70,6 +74,7 @@ class AttendancePermit extends Model
             'pending' => 'Tertunda',
             'rejected' => 'Ditolak',
             'approved' => 'Disetujui', 
+            'withdraw' => 'Dibatalkan', 
         ];
         
         return $status[$this->status] ?? $this->status;
@@ -87,6 +92,18 @@ class AttendancePermit extends Model
         $color = $map[$this->status] ?? 'secondary';
 
         return '<span class="badge bg-' . $color . '">' . ucfirst($this->status) . '</span>';
+    }
+
+    public function getUserInfoAttribute()
+    {
+        if (!$this->user) return null;
+
+        return [
+            'user_id' => $this->user->id,
+            'name' => $this->user->name,
+            'department' => $this->user->department?->name,
+            'position' => $this->user->position?->name,
+        ];
     }
 
     public function getPeriodeLocaleAttribute()

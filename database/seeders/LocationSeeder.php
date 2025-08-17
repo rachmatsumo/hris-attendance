@@ -13,7 +13,7 @@ class LocationSeeder extends Seeder
      */
     public function run(): void
     {
-           $locations = [
+        $locations = [
             [
                 'name' => 'Sepatan',
                 'lat_long' => '-6.1076327,106.5565591', 

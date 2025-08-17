@@ -269,13 +269,14 @@ class WorkScheduleController extends Controller
         $start = Carbon::createFromFormat('Y-m', $month)->startOfMonth();
         $end = Carbon::createFromFormat('Y-m', $month)->endOfMonth();
 
+        // Tentukan tanggal shift pertama sesuai start_day
         $firstShiftDate = $start->copy();
         while ($firstShiftDate->dayOfWeek != $startDay) {
             $firstShiftDate->addDay();
         }
-
         $offset = $start->diffInDays($firstShiftDate);
 
+        // Buat pola bulan penuh
         $fullMonthPattern = [];
         $daysInMonth = $start->daysInMonth;
         for ($i = 0; $i < $daysInMonth; $i++) {
@@ -289,30 +290,46 @@ class WorkScheduleController extends Controller
 
         // Ambil jadwal lama sesuai bulk_id lama
         $existingSchedules = WorkSchedule::where('bulk_id', $bulk_id)->get();
-
         $existingUserIds = $existingSchedules->pluck('user_id')->unique()->toArray();
 
-        // 1. Update bulk_id untuk user lama
-        WorkSchedule::whereIn('user_id', $users)
-            ->where('bulk_id', $bulk_id)
-            ->update(['bulk_id' => $newBulkId]);
+        // 1. Update bulk_id lama ke bulk_id baru
+        WorkSchedule::where('bulk_id', $bulk_id)->update(['bulk_id' => $newBulkId]);
 
-        // 2. Hapus jadwal untuk user yang dihapus, kecuali yang sudah ada attendance
+        // 2. Update shift sesuai pola baru untuk semua user yang ada
+        foreach ($users as $userId) {
+            $userSchedules = WorkSchedule::where('bulk_id', $newBulkId)
+                ->where('user_id', $userId)
+                ->orderBy('work_date')
+                ->get();
+
+            foreach ($userSchedules as $index => $schedule) {
+                $shiftId = $fullMonthPattern[$index] ?? null;
+                if ($shiftId === '0' || $shiftId === 0 || $shiftId === 'null' || $shiftId === '') {
+                    $shiftId = null;
+                }
+                $schedule->update([
+                    'working_time_id' => $shiftId,
+                    'is_active' => $shiftId !== null
+                ]);
+            }
+        }
+
+        // 3. Hapus jadwal untuk user yang dihapus, kecuali ada attendance
         $usersToDelete = array_diff($existingUserIds, $users);
         WorkSchedule::whereIn('user_id', $usersToDelete)
-            ->where('bulk_id', $bulk_id)
+            ->where('bulk_id', $newBulkId)
             ->doesntHave('attendance')
             ->delete();
 
-        // 3. Tambahkan jadwal untuk user baru
+        // 4. Tambahkan jadwal untuk user baru
         $usersToInsert = array_diff($users, $existingUserIds);
         if (!empty($usersToInsert)) {
-            $period = CarbonPeriod::create($start, $end);
+            $period = \Carbon\CarbonPeriod::create($start, $end);
             $insertData = [];
 
             foreach ($period as $index => $date) {
-                $shiftId = $fullMonthPattern[$index];
-                if ($shiftId === '0' || $shiftId === 0 || $shiftId === 'null' || $shiftId === null || $shiftId === '') {
+                $shiftId = $fullMonthPattern[$index] ?? null;
+                if ($shiftId === '0' || $shiftId === 0 || $shiftId === 'null' || $shiftId === '') {
                     $shiftId = null;
                 }
 
@@ -321,7 +338,7 @@ class WorkScheduleController extends Controller
                         'user_id' => $userId,
                         'work_date' => $date->toDateString(),
                         'working_time_id' => $shiftId,
-                        'is_active' => true,
+                        'is_active' => $shiftId !== null,
                         'bulk_id' => $newBulkId,
                         'created_at' => now(),
                         'updated_at' => now(),
@@ -335,6 +352,7 @@ class WorkScheduleController extends Controller
         return redirect()->route('work-schedule.show', $newBulkId)
             ->with('success', 'Jadwal berhasil diperbarui');
     }
+
 
     public function destroyBulk($bulk_id)
     {

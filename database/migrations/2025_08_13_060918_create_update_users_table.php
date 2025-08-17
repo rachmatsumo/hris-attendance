@@ -12,24 +12,22 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->string('employee_id')->unique()->after('id');
             $table->enum('role', ['admin', 'hr', 'employee'])->default('employee')->after('email');
-            $table->foreignId('department_id')->nullable()->constrained()->nullOnDelete()->after('role');
-            $table->string('phone')->nullable()->after('department_id');
+            $table->foreignId('position_id')->nullable()->constrained('positions')->nullOnDelete()->after('role');
+            $table->string('phone')->nullable()->after('position_id');
             $table->date('join_date')->nullable()->after('phone');
-            $table->decimal('salary_per_day', 10, 2)->default(0)->after('join_date');
-            $table->decimal('meal_allowance', 8, 2)->default(0)->after('salary_per_day');
-            $table->string('profile_photo')->nullable()->after('meal_allowance');
-            $table->boolean('is_active')->default(true)->after('profile_photo');
+            $table->string('profile_photo')->nullable()->after('join_date');
+            $table->enum('gender', ['male','female'])->nullable()->after('profile_photo');
+            $table->boolean('is_active')->default(true)->after('gender');
         });
     }
 
     public function down()
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropForeign(['department_id']);
+        Schema::table('users', function (Blueprint $table) { 
+            $table->dropColumn('position_id');
             $table->dropColumn([
-                'employee_id', 'role', 'department_id', 'phone', 
-                'join_date', 'salary_per_day', 'meal_allowance', 
-                'profile_photo', 'is_active'
+                'employee_id', 'role', 'position_id', 'phone', 
+                'join_date','profile_photo', 'is_active', 'gender'
             ]);
         });
     }

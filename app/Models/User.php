@@ -115,13 +115,13 @@ class User extends Authenticatable
 
         $count_cuti = $this->attendancePermits()
             ->where('type', 'leave')
-            ->where('status', '!=', 'rejected')
+            ->whereNotIn('status', ['rejected', 'withdraw'])
             ->whereYear('start_date', $year)
             ->sum('total_day');
 
         $count_izin = $this->attendancePermits()
             ->where('type', '!=', 'leave')
-            ->where('status', '!=', 'rejected')
+            ->whereNotIn('status', ['rejected', 'withdraw'])
             ->whereYear('start_date', $year)
             ->sum('total_day');
 

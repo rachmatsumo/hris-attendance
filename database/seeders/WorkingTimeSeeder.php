@@ -18,7 +18,7 @@ class WorkingTimeSeeder extends Seeder
         DB::table('working_times')->insert([
             [
                 'name' => 'Shift Pagi',
-                'code' => 'SP-L',
+                'code' => 'SF-PG',
                 'start_time' => '07:00',
                 'end_time' => '15:00',
                 'end_next_day' => false,
@@ -33,7 +33,7 @@ class WorkingTimeSeeder extends Seeder
             ],
             [
                 'name' => 'Shift Siang',
-                'code' => 'SS-L',
+                'code' => 'SF-SG',
                 'start_time' => '15:00',
                 'end_time' => '23:00',
                 'end_next_day' => false,
@@ -48,7 +48,7 @@ class WorkingTimeSeeder extends Seeder
             ],
             [
                 'name' => 'Shift Malam',
-                'code' => 'SM-L',
+                'code' => 'SF-ML',
                 'start_time' => '23:00',
                 'end_time' => '07:00',
                 'end_next_day' => true, // selesai besok
@@ -62,8 +62,8 @@ class WorkingTimeSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'name' => 'Office Hour',
-                'code' => 'OFH',
+                'name' => 'Office Hour 1',
+                'code' => 'OH-SK',
                 'start_time' => '07:00',
                 'end_time' => '17:00',
                 'end_next_day' => false,
@@ -77,8 +77,8 @@ class WorkingTimeSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'name' => 'Office Hour Jumat',
-                'code' => 'OFJ',
+                'name' => 'Office Hour 2',
+                'code' => 'OH-JJ',
                 'start_time' => '07:00',
                 'end_time' => '15:30',
                 'end_next_day' => false,

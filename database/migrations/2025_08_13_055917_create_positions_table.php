@@ -18,7 +18,7 @@ return new class extends Migration
                 ->nullable()
                 ->constrained('departments')
                 ->nullOnDelete();
-            $table->string('code', 20)->unique();
+            // $table->string('code', 20)->unique();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });

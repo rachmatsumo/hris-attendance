@@ -23,6 +23,14 @@
                     <i class="bi bi-chevron-compact-right"></i>
                 </a>
             </li> 
+            <li>
+                <a href="#">
+                    <div>
+                        <span class="mb-0"><i class="bi bi-question-circle mb-0"></i></span> Bantuan
+                    </div>
+                    <i class="bi bi-chevron-compact-right"></i>
+                </a>
+            </li> 
             
             <li class="mt-5"> 
                 <a class="logout" href="{{ route('logout') }}"

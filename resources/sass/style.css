@@ -27,7 +27,7 @@
 } 
 .flash-message {
     position: fixed!important;
-    bottom: var(--navbar-height, 100px);
+    bottom: var(--navbar-height, 80px);
     left: 5%;
     width : 90%;
     /* transform: translateX(-50%); */

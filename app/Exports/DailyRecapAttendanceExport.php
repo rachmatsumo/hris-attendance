@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Models\Attendance;
+use App\Models\WorkSchedule;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
@@ -23,15 +24,20 @@ class DailyRecapAttendanceExport implements FromCollection, WithHeadings, WithMa
     }
 
     public function collection()
-    {
-        return Attendance::with([
-                'user.department',
-                'user.position',
-                'workSchedule.workingTime'
-            ])
-            ->whereDate('date', $this->date)
-            ->orderBy('user_id')
-            ->get();
+    {   
+        $date = $this->date;
+        return WorkSchedule::with([
+                                'user.department',
+                                'user.position',
+                                'workingTime',
+                                'attendance' => function($q) use ($date) {
+                                    $q->whereDate('date', $date);
+                                }
+                            ])
+                            ->whereDate('work_date', $date)
+                            ->whereNotNull('working_time_id')
+                            ->orderBy('user_id')
+                            ->get();
     }
 
     public function headings(): array
@@ -52,25 +58,43 @@ class DailyRecapAttendanceExport implements FromCollection, WithHeadings, WithMa
 
     public function map($attendance): array
     {
-        $user = $attendance->user;
-        $workingTime = $attendance->workSchedule?->workingTime;
+        // $user = $attendance->user;
+        // $workingTime = $attendance->workSchedule?->workingTime;
 
-        $jadwal = $workingTime 
-            ? $workingTime->start_time . ' - ' . $workingTime->end_time 
-            : '-';
+        // $jadwal = $workingTime 
+        //     ? $workingTime->start_time . ' - ' . $workingTime->end_time 
+        //     : '-';
 
-        return [
-            $this->counter++,                          // No
-            $attendance->date->format('Y-m-d'),        // Tanggal
-            $user->employee_id ?? '-',                 // ID Pegawai
-            $user->name ?? '-',                         // Nama
-            $user->department?->name ?? '-',           // Divisi
-            $user->position?->name ?? '-',             // Jabatan
-            $jadwal,                                   // Jadwal Kerja
-            $attendance->clock_in_time ?? '-',         // Clock In
-            $attendance->clock_out_time ?? '-',        // Clock Out
-            $attendance->status ?? '-',                // Status
-        ];
+        // // Cek attendancePermit terkait user untuk tanggal ini
+        // $permit = $attendance->user->attendancePermits()
+        //                 ->where('status', 'approved')
+        //                 ->whereDate('start_date', '<=', $attendance->work_date)
+        //                 ->whereDate('end_date', '>=', $attendance->work_date)
+        //                 ->first();
+
+        // // dd($permit);
+
+        // if ($permit) {
+        //     // $jadwal = $permit->type === 'leave' ? 'Cuti' : 'Izin';
+        //     $status = $permit->type === 'leave' ? 'Cuti' : 'Izin';
+        // } else {
+        //     $status = $attendance->status ?? 'Tidak Hadir';
+        // }
+        // // dd($status);
+
+        // return [
+        //     $this->counter++,                          // No
+        //     $attendance->work_date,        // Tanggal
+        //     $user->employee_id ?? '-',                 // ID Pegawai
+        //     $user->name ?? '-',                        // Nama
+        //     $user->department?->name ?? '-',           // Divisi
+        //     $user->position?->name ?? '-',             // Jabatan
+        //     $jadwal,                                   // Jadwal Kerja
+        //     $attendance->clock_in_time ?? '-',         // Clock In
+        //     $attendance->clock_out_time ?? '-',        // Clock Out
+        //     $status,                                   // Status
+        // ];
+        return [];
     }
 
     public function registerEvents(): array
@@ -114,21 +138,35 @@ class DailyRecapAttendanceExport implements FromCollection, WithHeadings, WithMa
                 foreach($collection as $rowIndex => $attendance) {
                     $user = $attendance->user;
                     $workingTime = $attendance->workSchedule?->workingTime;
-                    $jadwal = $workingTime 
-                        ? $workingTime->start_time . ' - ' . $workingTime->end_time 
-                        : '-';
+                    $jadwal = $attendance->workingTime->schedule;
+
+                    // Cek attendancePermit terkait user untuk tanggal ini
+                    $permit = $attendance->user->attendancePermits()
+                                    ->where('status', 'approved')
+                                    ->whereDate('start_date', '<=', $attendance->work_date)
+                                    ->whereDate('end_date', '>=', $attendance->work_date)
+                                    ->first();
+
+                    // dd($permit);
+
+                    if ($permit) {
+                        // $jadwal = $permit->type === 'leave' ? 'Cuti' : 'Izin';
+                        $status = $permit->type === 'leave' ? 'Cuti' : 'Izin';
+                    } else {
+                        $status = $attendance?->attendance->status ?? 'Tidak Hadir';
+                    }
                     
                     $rowData = [
                         $counter++,
-                        $attendance->date->format('Y-m-d'),
+                        $attendance->work_date,
                         $user->employee_id ?? '-',
                         $user->name ?? '-',
                         $user->department?->name ?? '-',
                         $user->position?->name ?? '-',
                         $jadwal,
-                        $attendance->clock_in_time ?? '-',
-                        $attendance->clock_out_time ?? '-',
-                        $attendance->status ?? '-',
+                        $attendance?->attendance->clock_in_time ?? '-',
+                        $attendance?->attendance->clock_out_time ?? '-',
+                        ucwords($status),
                     ];
                     
                     foreach($rowData as $colIndex => $value) {

@@ -45,4 +45,21 @@ class WorkSchedule extends Model
         return $this->hasOne(Attendance::class, 'work_schedule_id', 'id');
     }
 
+    public function attendancePermit()
+    {
+        return $this->hasOne(AttendancePermit::class, 'user_id', 'user_id')
+                    ->where('status', 'approved')
+                    ->whereDate('start_date', '<=', $this->work_date)
+                    ->whereDate('end_date', '>=', $this->work_date);
+    }
+ 
+    public function getDisplayCodeAttribute()
+    {
+        if ($permit = $this->attendancePermit) {
+            return $permit->type === 'leave' ? 'Cuti' : 'Izin';
+        }
+
+        return $this->workingTime?->code ?? '-';
+    }
+
 }
