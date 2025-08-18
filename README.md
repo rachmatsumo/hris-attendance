@@ -31,3 +31,10 @@
 
 <h2>📄 Lisensi</h2>
 <p>Proyek ini dilisensikan di bawah <a href="LICENSE">MIT License</a>.</p>
+
+![Admin Menu](screenshots/pic1.png)
+![Schedule Editor](screenshots/pic2.png)
+![Absensi](screenshots/pic3.png)
+![Konfirmasi Absen](screenshots/pic4.png)
+![Area Kerja](screenshots/pic5.png)
+![Cuti dan Izin](screenshots/pic6.png)
