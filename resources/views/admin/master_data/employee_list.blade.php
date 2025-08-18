@@ -37,8 +37,8 @@
                                 <tr>
                                     <td class="v-middle">{{ $a->employee_id }}</td>
                                     <td class="v-middle">{{ $a->name }}</td>
-                                    <td class="v-middle">{{ $a->position->name }}</td>
-                                    <td class="v-middle">{{ $a->department->name }}</td>
+                                    <td class="v-middle">{{ $a?->position?->name }}</td>
+                                    <td class="v-middle">{{ $a?->department?->name }}</td>
                                     <td class="v-middle">{{ $a->email }}</td>
                                     <td class="v-middle">{{ $a->phone }}</td>
                                     <td class="v-middle">{{ $a->gender_locale }}</td>
