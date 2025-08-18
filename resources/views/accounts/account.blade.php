@@ -32,14 +32,14 @@
                     <i class="bi bi-chevron-compact-right"></i>
                 </a>
             </li> 
-            <li>
+            {{-- <li>
                 <a href="#">
                     <div>
                         <span class="mb-0"><i class="bi bi-question-circle mb-0"></i></span> Bantuan
                     </div>
                     <i class="bi bi-chevron-compact-right"></i>
                 </a>
-            </li> 
+            </li>  --}}
             
             <li class=""> 
                 <a class="logout" href="{{ route('logout') }}"

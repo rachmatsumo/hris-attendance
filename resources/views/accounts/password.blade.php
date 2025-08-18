@@ -21,7 +21,7 @@
 
                         <div class="mb-3">
                             <label for="update_password_current_password" class="form-label">
-                                Current Password
+                                Kata Sandi Lama
                             </label>
                             <input id="update_password_current_password" 
                                    name="current_password" 
@@ -37,7 +37,7 @@
 
                         <div class="mb-3">
                             <label for="update_password_password" class="form-label">
-                                New Password
+                                Kata Sandi Baru
                             </label>
                             <input id="update_password_password" 
                                    name="password" 
@@ -53,7 +53,7 @@
 
                         <div class="mb-4">
                             <label for="update_password_password_confirmation" class="form-label">
-                                Confirm Password
+                                Konfirmasi Kata Sandi Baru
                             </label>
                             <input id="update_password_password_confirmation" 
                                    name="password_confirmation" 

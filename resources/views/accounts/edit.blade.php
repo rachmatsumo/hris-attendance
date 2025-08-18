@@ -5,7 +5,7 @@
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
             <div class="card shadow-sm">
-                 <div class="card-body">
+                <div class="card-body">
 
                     {{-- Tombol Back di atas --}}
                     <div class="mb-3">
@@ -22,7 +22,7 @@
                                     : asset('upload/avatar/default.png') }}" 
                             alt="Avatar" 
                             class="p-2 rounded-circle border" 
-                            style="width: 120px; height: 120px; object-fit: cover;object-position: top; /"
+                            style="width: 120px; height: 120px; object-fit: cover; object-position: top;"
                             id="avatarPreview">
 
                         <div class="mt-2">
@@ -34,11 +34,10 @@
 
                     {{-- Form Update Profile --}}
                     <form method="post" action="{{ route('account.update', Auth::id()) }}" enctype="multipart/form-data">
-
                         @csrf
                         @method('patch')
 
-                         {{-- Input foto disembunyikan --}}
+                        {{-- Input foto disembunyikan --}}
                         <input type="file" 
                                id="avatar" 
                                name="avatar" 
@@ -46,6 +45,7 @@
                                class="d-none"
                                onchange="previewAvatar(event)">
 
+                        {{-- Nama --}}
                         <div class="mb-3">
                             <label for="name" class="form-label">Nama</label>
                             <input type="text" 
@@ -59,6 +59,7 @@
                             @enderror
                         </div>
 
+                        {{-- Email --}}
                         <div class="mb-3">
                             <label for="email" class="form-label">Email</label>
                             <input type="email" 
@@ -81,11 +82,44 @@
                             @endif
                         </div>
 
-                        {{-- Tombol Back & Save di bawah --}}
+                        {{-- Jenis Kelamin --}}
+                        <div class="mb-3">
+                            <label for="gender" class="form-label">Jenis Kelamin</label>
+                            <select id="gender" name="gender" class="form-select">
+                                <option value="male" {{ old('gender', $user->gender) === 'male' ? 'selected' : '' }}>Laki-laki</option>
+                                <option value="female" {{ old('gender', $user->gender) === 'female' ? 'selected' : '' }}>Perempuan</option>
+                            </select>
+                            @error('gender')
+                                <div class="text-danger small">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        {{-- Nomor HP --}}
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Nomor HP</label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="phone" 
+                                   name="phone" 
+                                   value="{{ old('phone', $user->phone) }}">
+                            @error('phone')
+                                <div class="text-danger small">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        {{-- Read-only: Jabatan, Divisi, Join Date --}}
+                        <div class="mb-3">
+                            <label class="form-label">Jabatan</label>
+                            <input type="text" class="form-control" value="{{ $user->position->name ?? '-' }}" readonly>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Divisi</label>
+                            <input type="text" class="form-control" value="{{ $user->department->name ?? '-' }}" readonly>
+                        </div> 
+
+                        {{-- Tombol Save --}}
                         <div class="d-flex justify-content-end mt-4">
-                            {{-- <a href="{{ url()->previous() }}" class="btn btn-secondary">
-                                <i class="bi bi-arrow-left"></i> Kembali
-                            </a> --}}
                             <button type="submit" class="btn btn-primary">
                                 Simpan
                             </button>

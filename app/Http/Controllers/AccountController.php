@@ -36,38 +36,39 @@ class AccountController extends Controller
     {
         $user = Auth::user();
 
+        // Validasi input termasuk gender dan phone
         $request->validate([
             'name'   => 'required|string|max:255',
             'email'  => 'required|email|max:255',
-            'avatar' => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // boleh kosong
+            'gender' => 'nullable|in:male,female',
+            'phone'  => 'nullable|string|max:20',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        // Update nama/email
-        $user->name = $request->name;
+        // Update data dasar
+        $user->name   = $request->name;
+        $user->gender = $request->gender;
+        $user->phone  = $request->phone;
+
+        // Update email jika berubah
         if ($user->email !== $request->email) {
             $user->email = $request->email;
             $user->email_verified_at = null; // reset verifikasi email
         }
 
-        $file = $request->file('avatar');
-        $filename  = time() . '.jpg';
-        $avatarDir = public_path('upload/avatar');
-        $thumbDir  = public_path('upload/avatar/thumbnails');
-
-        if (!file_exists($avatarDir)) mkdir($avatarDir, 0777, true);
-        if (!file_exists($thumbDir)) mkdir($thumbDir, 0777, true);
-
-        // Hapus avatar lama
+        // Proses avatar
         if ($request->hasFile('avatar') && $request->file('avatar')->isValid()) {
-            $file = $request->file('avatar');
+            $file      = $request->file('avatar');
+            $filename  = time() . '.jpg';
+            $avatarDir = public_path('upload/avatar');
+            $thumbDir  = public_path('upload/avatar/thumbnails');
 
-            // Hapus avatar lama hanya jika bukan default
-            if ($user->profile_photo && $user->profile_photo !== 'default.png' &&
-                file_exists($avatarDir . '/' . $user->profile_photo)) {
+            if (!file_exists($avatarDir)) mkdir($avatarDir, 0777, true);
+            if (!file_exists($thumbDir)) mkdir($thumbDir, 0777, true);
+
+            // Hapus avatar lama jika bukan default
+            if ($user->profile_photo && $user->profile_photo !== 'default.png') {
                 @unlink($avatarDir . '/' . $user->profile_photo);
-            }
-            if ($user->profile_photo && $user->profile_photo !== 'default.png' &&
-                file_exists($thumbDir . '/' . $user->profile_photo)) {
                 @unlink($thumbDir . '/' . $user->profile_photo);
             }
 
@@ -86,17 +87,17 @@ class AccountController extends Controller
                 $thumb->writeImage($thumbDir . '/' . $filename);
 
             } catch (\Exception $e) {
-                return redirect()->back()->with('error', 'Imagick gagal proses gambar: ' . $e->getMessage());
+                return redirect()->back()->with('error', 'Gagal memproses gambar: ' . $e->getMessage());
             }
 
             $user->profile_photo = $filename;
         }
 
         $user->save();
- 
-        return back()->with('status', 'profile-updated');
 
+        return back()->with('status', 'Profile diperbarui.');
     }
+
   
     public function payrollIndex(Request $request)
     {
