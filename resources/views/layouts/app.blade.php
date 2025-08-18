@@ -94,6 +94,7 @@
                                         request()->routeIs('holiday.*') ||
                                         request()->routeIs('working-time.*') ||
                                         request()->routeIs('setting.*') ||
+                                        request()->routeIs('level.*') ||
                                         request()->routeIs('payroll-admin.*') ||
                                         request()->routeIs('recap-attendance.*') ||
                                         request()->routeIs('attendance-permit-admin.*')
