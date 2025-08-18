@@ -32,4 +32,9 @@ class Position extends Model
     {
         return $this->hasMany(Income::class, 'level_id', 'level_id');
     }
+
+    public function level()
+    {
+        return $this->belongsTo(Level::class);
+    }
 }

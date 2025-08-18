@@ -8,6 +8,14 @@
         
         <ul class="menu-list">
             <li>
+                <a href="{{ route('account.payroll') }}">
+                    <div>
+                        <span class="mb-0"><i class="bi bi-cash-stack mb-0"></i></span> Payroll Statement
+                    </div>
+                    <i class="bi bi-chevron-compact-right"></i>
+                </a>
+            </li>
+            <li>
                 <a href="{{ route('account.edit') }}">
                     <div>
                         <span class="mb-0"><i class="bi bi-person-circle mb-0"></i></span> Perbarui Profile
@@ -15,7 +23,8 @@
                     <i class="bi bi-chevron-compact-right"></i>
                 </a>
             </li>
-            <li>
+            
+            <li class="mt-5">
                 <a href="{{ route('account.change-password') }}">
                     <div>
                         <span class="mb-0"><i class="bi bi-key mb-0"></i></span> Ubah Kata Sandi
@@ -32,7 +41,7 @@
                 </a>
             </li> 
             
-            <li class="mt-5"> 
+            <li class=""> 
                 <a class="logout" href="{{ route('logout') }}"
                 onclick="event.preventDefault();
                                     document.getElementById('logout-form').submit();">

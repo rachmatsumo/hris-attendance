@@ -52,16 +52,17 @@ class WorkScheduleSeeder extends Seeder
                     } else {
                         $workingTimeId = null;
                     }
-
-                    $insertData[] = [
-                        'user_id'         => $user->id,
-                        'work_date'       => $date->toDateString(),
-                        'working_time_id' => $workingTimeId,
-                        'is_active'       => $workingTimeId !== null,
-                        'bulk_id'         => $bulk_id,
-                        'created_at'      => now(),
-                        'updated_at'      => now(),
-                    ];
+                    if ($date->month === $startDate->month) {
+                        $insertData[] = [
+                            'user_id'         => $user->id,
+                            'work_date'       => $date->toDateString(),
+                            'working_time_id' => $workingTimeId,
+                            'is_active'       => $workingTimeId !== null,
+                            'bulk_id'         => $bulk_id,
+                            'created_at'      => now(),
+                            'updated_at'      => now(),
+                        ];
+                    }
 
                     $date->addDay();
                 }
@@ -73,8 +74,11 @@ class WorkScheduleSeeder extends Seeder
 
                 for ($i = 0; $i < $totalDays; $i++) {
                     $currentDate = $startDate->copy()->addDays($i);
+                    if ($currentDate->month !== $startDate->month) {
+                        continue; // skip tanggal di luar bulan ini
+                    }
+                    
                     $shiftCode = $pattern[$i % 4]; // ambil shift sesuai pattern
-
                     $workingTimeId = match($shiftCode) {
                         'P' => $shiftPagi,
                         'S' => $shiftSiang,

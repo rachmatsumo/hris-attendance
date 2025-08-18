@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::table('working_times', function (Blueprint $table) {
             $table->string('color', 15) // untuk HEX color, misal #FF0000
                   ->nullable()
-                  ->after('is_location_limited');
+                  ->after('late_tolerance_minutes');
         });
     }
 

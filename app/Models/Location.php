@@ -17,4 +17,14 @@ class Location extends Model
         'is_active',
         'radius',
     ];
+
+      public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    public function getStatusNameAttribute()
+    {
+        return $this->is_active ? 'Aktif' : 'Nonaktif';
+    }
 }

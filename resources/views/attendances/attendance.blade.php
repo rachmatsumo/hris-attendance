@@ -92,7 +92,7 @@
             <div class="modal-body">
                 <p id="modalText"></p>
 
-                @if($activeShift?->workingTime?->is_location_limited)
+                @if(setting('location_required') == '1')
                     <div id="map" style="height:300px;" class="mb-3"></div>
                     <input type="hidden" id="location_lat_long" name="location_lat_long">
                     <p class="small text-muted">Pastikan Anda berada di lokasi yang ditentukan.</p>
@@ -157,7 +157,7 @@
         const confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
         confirmModal.show();
 
-        @if($activeShift?->workingTime?->is_location_limited)
+        @if(setting('location_required') == '1')
         document.getElementById('confirmModal').addEventListener('shown.bs.modal', function () {
             initMap();
         }, { once: true });
@@ -225,7 +225,14 @@
     });
 
     document.getElementById('confirmBtn').addEventListener('click', () => {
-        if (!photoTaken || !document.getElementById('photoData').value) {
+
+        const photoRequired = (selectedType === 'clock_in_time') 
+            ? {{ setting('photo_required_clock_in', 0) }} 
+            : {{ setting('photo_required_clock_out', 0) }};
+
+        console.log(photoRequired);
+
+        if (photoRequired && (!photoTaken || !document.getElementById('photoData').value)) {
             alert('Silakan ambil foto terlebih dahulu!');
             document.getElementById('photoStatus').style.display = 'block';
             return;
@@ -240,7 +247,7 @@
         typeInput.value = selectedType;
         form.appendChild(typeInput);
 
-        @if($activeShift?->workingTime?->is_location_limited)
+        @if(setting('location_required') == '1')
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(pos => {
                 let locInput = document.createElement('input');
@@ -272,7 +279,7 @@
         }
     });
 
-@if($activeShift?->workingTime?->is_location_limited)
+@if(setting('location_required') == '1')
 function initMap(){
     const mapDiv=document.getElementById('map');
     if(map){ map.remove(); map=null; }

@@ -39,7 +39,7 @@
 
                         {{-- Users --}}
                         <div class="mb-3">
-                            <label>Pilih User</label>
+                            <label>Pilih Karyawan</label>
                             <select name="users[]" class="form-control" multiple required>
                                 @foreach($users as $user)
                                     <option value="{{ $user->id }}">{{ $user->name }}</option>

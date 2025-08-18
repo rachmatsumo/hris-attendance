@@ -29,6 +29,7 @@ Route::middleware('auth')->group(function () {
     Route::get('account/menu', [AccountController::class, 'index'])->name('account.index');
     Route::get('account/edit', [AccountController::class, 'edit'])->name('account.edit');
     Route::get('account/change-password', [AccountController::class, 'changePassword'])->name('account.change-password');
+    Route::get('account/payroll', [AccountController::class, 'payrollIndex'])->name('account.payroll');
     
     // Absensi
     Route::get('attendances/log', [AttendanceController::class, 'log'])->name('attendances.log');

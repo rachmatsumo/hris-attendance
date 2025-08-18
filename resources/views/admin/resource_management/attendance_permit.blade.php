@@ -105,9 +105,6 @@
     </div>
 </div>
 
-<!-- SweetAlert2 CDN -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script>
 document.addEventListener('click', function(e) {
 
@@ -170,10 +167,10 @@ document.addEventListener('click', function(e) {
         showCancelButton: true,
         confirmButtonText: isApprove ? 'Setuju' : 'Tolak',
         cancelButtonText: 'Batal',
-        preConfirm: (approval_notes) => {
-            if(!approval_notes) Swal.showValidationMessage('Catatan harus diisi!');
-            return approval_notes;
-        }
+        // preConfirm: (approval_notes) => {
+        //     if(!approval_notes) Swal.showValidationMessage('Catatan harus diisi!');
+        //     return approval_notes;
+        // }
     }).then(result => {
         if(result.isConfirmed){
             const formData = new FormData();

@@ -20,7 +20,7 @@ class LocationController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'lat_long' => 'required|string|max:255',
-            'radius' => 'required|integer|max:255', 
+            'radius' => 'required|numeric|min:0.1|max:999.99', 
             'is_active' => 'nullable|boolean',
         ]);
 
@@ -57,7 +57,7 @@ class LocationController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'lat_long' => 'required|string|max:255',
-            'radius' => 'required|integer|max:255', 
+            'radius' => 'required|numeric|min:0.1|max:999.99', 
             'is_active' => 'nullable|boolean',
         ]);
 

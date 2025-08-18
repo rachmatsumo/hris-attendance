@@ -8,13 +8,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View; 
+use App\Models\Payroll;
 use Imagick;
 
 class AccountController extends Controller
-{
-    /**
-     * Display the user's profile form.
-     */
+{ 
     public function index(Request $request): View
     {
         return view('accounts.account', [
@@ -33,15 +31,12 @@ class AccountController extends Controller
     {
         return view('accounts.password');
     }
-
-    /**
-     * Update the user's profile information.
-     */
+ 
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $user = Auth::user();
 
-       $request->validate([
+        $request->validate([
             'name'   => 'required|string|max:255',
             'email'  => 'required|email|max:255',
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // boleh kosong
@@ -64,65 +59,60 @@ class AccountController extends Controller
 
         // Hapus avatar lama
         if ($request->hasFile('avatar') && $request->file('avatar')->isValid()) {
-        $file = $request->file('avatar');
+            $file = $request->file('avatar');
 
-        // Hapus avatar lama hanya jika bukan default
-        if ($user->profile_photo && $user->profile_photo !== 'default.png' &&
-            file_exists($avatarDir . '/' . $user->profile_photo)) {
-            @unlink($avatarDir . '/' . $user->profile_photo);
+            // Hapus avatar lama hanya jika bukan default
+            if ($user->profile_photo && $user->profile_photo !== 'default.png' &&
+                file_exists($avatarDir . '/' . $user->profile_photo)) {
+                @unlink($avatarDir . '/' . $user->profile_photo);
+            }
+            if ($user->profile_photo && $user->profile_photo !== 'default.png' &&
+                file_exists($thumbDir . '/' . $user->profile_photo)) {
+                @unlink($thumbDir . '/' . $user->profile_photo);
+            }
+
+            try {
+                // Simpan gambar utama
+                $image = new \Imagick($file->getRealPath());
+                $image->setImageFormat('jpeg');
+                $image->setImageCompressionQuality(90);
+                $image->writeImage($avatarDir . '/' . $filename);
+
+                // Buat thumbnail 400x400 proporsional
+                $thumb = new \Imagick($file->getRealPath());
+                $thumb->thumbnailImage(400, 400, true);
+                $thumb->setImageFormat('jpeg');
+                $thumb->setImageCompressionQuality(70);
+                $thumb->writeImage($thumbDir . '/' . $filename);
+
+            } catch (\Exception $e) {
+                return redirect()->back()->with('error', 'Imagick gagal proses gambar: ' . $e->getMessage());
+            }
+
+            $user->profile_photo = $filename;
         }
-        if ($user->profile_photo && $user->profile_photo !== 'default.png' &&
-            file_exists($thumbDir . '/' . $user->profile_photo)) {
-            @unlink($thumbDir . '/' . $user->profile_photo);
-        }
-
-        try {
-            // Simpan gambar utama
-            $image = new \Imagick($file->getRealPath());
-            $image->setImageFormat('jpeg');
-            $image->setImageCompressionQuality(90);
-            $image->writeImage($avatarDir . '/' . $filename);
-
-            // Buat thumbnail 400x400 proporsional
-            $thumb = new \Imagick($file->getRealPath());
-            $thumb->thumbnailImage(400, 400, true);
-            $thumb->setImageFormat('jpeg');
-            $thumb->setImageCompressionQuality(70);
-            $thumb->writeImage($thumbDir . '/' . $filename);
-
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Imagick gagal proses gambar: ' . $e->getMessage());
-        }
-
-        $user->profile_photo = $filename;
-    }
 
         $user->save();
-
-        // return redirect()->route('account.edit', $user->id)->with('status', 'profile-updated');
+ 
         return back()->with('status', 'profile-updated');
 
     }
-
-
-    /**
-     * Delete the user's account.
-     */
-    public function destroy(Request $request): RedirectResponse
+  
+    public function payrollIndex(Request $request)
     {
-        $request->validateWithBag('userDeletion', [
-            'password' => ['required', 'current_password'],
+        $year = $request->input('year') ?? date('Y');
+
+        $payrolls = Payroll::where('year', $year)
+                            ->where('user_id', Auth::id())
+                            ->orderBy('year', 'DESC')
+                            ->orderBy('month', 'DESC')
+                            ->paginate(10); 
+
+        $payrolls = $payrolls->appends([ 
+            'year' => $year
         ]);
 
-        $user = $request->user();
-
-        Auth::logout();
-
-        $user->delete();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return Redirect::to('/');
+        return view('accounts.payroll', compact('year', 'payrolls'));
     }
+
 }

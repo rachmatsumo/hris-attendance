@@ -35,7 +35,7 @@
                                     <th>Minggu</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="calendar-body">
                                 @php
                                     $firstDate = \Carbon\Carbon::parse($dates->first());
                                     $lastDate = \Carbon\Carbon::parse($dates->last());

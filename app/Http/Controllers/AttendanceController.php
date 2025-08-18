@@ -158,13 +158,17 @@ class AttendanceController extends Controller
         ));
     }
  
-    public function store(Request $request)
+   public function store(Request $request)
     {
         $type = $request->input('type'); // clock_in_time / clock_out_time
-
+        $locationRequired = (int) setting('location_required', 0);
+        $photoClockInRequire = (int) setting('photo_required_clock_in', 0);
+        $photoClockOutRequire = (int) setting('photo_required_clock_out', 0);
         // Validasi wajib foto
         if (!$request->photo) {
-            return redirect()->back()->with('error', 'Foto wajib diambil sebelum clock in/out');
+            if(($type=='clock_in_time' && $photoClockInRequire) || ($type=='clock_out_time' && $photoClockOutRequire)){
+                return redirect()->back()->with('error', 'Foto wajib diambil sebelum clock in/out');
+            }
         }
 
         // Ambil jadwal hari ini
@@ -200,7 +204,6 @@ class AttendanceController extends Controller
             'user_id' => Auth::id(),
             'date' => $attendanceDate,
         ]);
-
         $attendance->work_schedule_id = $schedule->id;
 
         // Ambil lokasi pengguna
@@ -222,11 +225,20 @@ class AttendanceController extends Controller
                 }
             }
         }
-        if ($schedule?->workingTime?->is_location_limited === 0) {
+
+        // Jika workingTime tidak dibatasi lokasi atau location_required != 1
+        if ($locationRequired !== 1) {
             $isWithinRadius = true;
         }
 
-        // Clock In
+        // Validasi radius jika location_required = 1
+        if ($locationRequired === 1 && !$isWithinRadius) {
+            return redirect()->back()->with('error', 'Anda berada di luar radius lokasi yang diperbolehkan');
+        }
+
+        // ====================
+        // CLOCK IN
+        // ====================
         if ($type === 'clock_in_time' && !$attendance->clock_in_time) {
             $now = now();
             $earliestClockIn = $shiftStart->copy()->subHours(2); // 2 jam sebelum shift start
@@ -235,26 +247,26 @@ class AttendanceController extends Controller
                 return redirect()->back()->with('error', 'Clock in terlalu awal. Anda hanya bisa clock in maksimal 2 jam sebelum shift.');
             }
 
-            
-            $attendance->clock_in_time = now();
+            $attendance->clock_in_time = $now;
             $attendance->clock_in_photo = $this->savePhoto($request->photo);
             $attendance->clock_in_lat = $userLat;
             $attendance->clock_in_lng = $userLng;
             $attendance->clock_in_notes = $isWithinRadius ? null : 'out of radius';
 
-            $toleranceTime = $shiftStart->copy()
-                                ->addMinutes($schedule->workingTime->late_tolerance_minutes ?? 0);
+            $toleranceTime = $shiftStart->copy()->addMinutes($schedule->workingTime->late_tolerance_minutes ?? 0);
 
-            if (now()->greaterThan($toleranceTime)) {
+            if ($now->greaterThan($toleranceTime)) {
                 $attendance->status = 'late';
-                $attendance->late_minutes = now()->diffInMinutes($shiftStart);
+                $attendance->late_minutes = $now->diffInMinutes($shiftStart);
             } else {
                 $attendance->status = 'present';
                 $attendance->late_minutes = 0;
             }
         }
 
-        // Clock Out
+        // ====================
+        // CLOCK OUT
+        // ====================
         if ($type === 'clock_out_time') {
             $now = now();
             $latestClockOut = $shiftEnd->copy()->addHours(5); // 5 jam setelah shift end
@@ -262,8 +274,8 @@ class AttendanceController extends Controller
             if ($now->greaterThan($latestClockOut)) {
                 return redirect()->back()->with('error', 'Clock out sudah melewati batas maksimal 5 jam setelah shift berakhir.');
             }
-            
-            $attendance->clock_out_time = now();
+
+            $attendance->clock_out_time = $now;
             $attendance->clock_out_photo = $this->savePhoto($request->photo);
             $attendance->clock_out_lat = $userLat;
             $attendance->clock_out_lng = $userLng;

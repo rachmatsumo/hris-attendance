@@ -16,23 +16,20 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->integer('month');
             $table->integer('year');
-            
-            // Attendance Summary
+            $table->enum('payroll_type', ['regular','bonus','allowance']);
+             
             $table->integer('total_working_days');
             $table->integer('total_present_days');
             $table->integer('total_late_days');
             $table->integer('total_absent_days');
             $table->decimal('total_working_hours', 6, 2)->default(0);
             $table->decimal('total_overtime_hours', 6, 2)->default(0);
-            
-            // Salary Calculation
-            $table->decimal('basic_salary', 12, 2)->default(0);
-            $table->decimal('meal_allowance_total', 10, 2)->default(0);
-            $table->decimal('overtime_pay', 10, 2)->default(0);
-            $table->decimal('bonus', 10, 2)->default(0);
-            $table->decimal('deductions', 10, 2)->default(0);
-            $table->decimal('gross_salary', 12, 2)->default(0);
-            $table->decimal('net_salary', 12, 2)->default(0);
+
+            $table->json('incomes_data')->nullable();
+            $table->decimal('incomes_total', 12, 2)->default(0);
+            $table->json('deductions_data')->nullable();
+            $table->decimal('deductions_total', 12, 2)->default(0); 
+            $table->decimal('net_salary', 12, 2)->default(0); 
             
             $table->text('notes')->nullable();
             $table->enum('status', ['draft', 'finalized', 'paid'])->default('draft');
@@ -41,7 +38,7 @@ return new class extends Migration
             
             $table->timestamps();
             
-            $table->unique(['user_id', 'month', 'year']);
+            $table->unique(['user_id', 'month', 'year', 'payroll_type']);
         });
     }
 

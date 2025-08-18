@@ -12,19 +12,20 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    protected $appends = ['department_id'];
+
     protected $fillable = [
         'employee_id',
         'name',
         'email',
         'password',
         'role',
-        'department_id',
+        'position_id', 
         'phone',
         'join_date',
-        'salary_per_day',
-        'meal_allowance',
         'profile_photo',
-        'is_active'
+        'is_active',
+        'gender',
     ];
 
     protected $hidden = [
@@ -32,11 +33,7 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    protected $casts = [
-        'join_date' => 'date',
-        'salary_per_day' => 'decimal:2',
-        'meal_allowance' => 'decimal:2',
-        'is_active' => 'boolean',
+    protected $casts = [  
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
@@ -60,11 +57,6 @@ class User extends Authenticatable
         );
     }
 
-    // public function department()
-    // {
-    //     return $this->belongsTo(Department::class);
-    // }
-
     public function workSchedules()
     {
         return $this->hasMany(WorkSchedule::class);
@@ -73,12 +65,7 @@ class User extends Authenticatable
     public function attendances()
     {
         return $this->hasMany(Attendance::class);
-    }
-
-    // public function leaveRequests()
-    // {
-    //     return $this->hasMany(LeaveRequest::class);
-    // }
+    } 
 
     public function attendancePermits()
     {
@@ -133,73 +120,20 @@ class User extends Authenticatable
             'sisa_cuti'  => $limit_cuti - $count_cuti,
             'sisa_izin'  => $limit_izin - $count_izin,
         ];
+    } 
+
+    public function getGenderLocaleAttribute()
+    {
+        return $this->gender == 'male' ? 'Laki-Laki' : 'Perempuan';
     }
 
+    public function getStatusNameAttribute()
+    {
+        return $this->is_active ? 'Aktif' : 'Nonaktif';
+    }
 
-    // public function scopeEmployee($query)
-    // {
-    //     return $query->where('role', 'employee');
-    // }
-
-    // public function scopeAdmin($query)
-    // {
-    //     return $query->where('role', 'admin');
-    // }
-
-    // public function scopeHR($query)
-    // {
-    //     return $query->where('role', 'hr');
-    // }
-
-    // // Accessors
-    // public function getProfilePhotoUrlAttribute()
-    // {
-    //     return $this->profile_photo ? asset('storage/' . $this->profile_photo) : null;
-    // }
-
-    // public function getFullNameAttribute()
-    // {
-    //     return $this->name . ' (' . $this->employee_id . ')';
-    // }
-
-    // // Methods
-    // public function getTodayAttendance()
-    // {
-    //     return $this->attendances()->forDate(today())->first();
-    // }
-
-    // public function hasWorkSchedule($dayOfWeek = null)
-    // {
-    //     $day = $dayOfWeek ?? today()->dayOfWeek;
-    //     return $this->workSchedules()->active()->forDay($day)->exists();
-    // }
-
-    // public function getWorkSchedule($dayOfWeek = null)
-    // {
-    //     $day = $dayOfWeek ?? today()->dayOfWeek;
-    //     return $this->workSchedules()->active()->forDay($day)->first();
-    // }
-
-    // public function canApprove()
-    // {
-    //     return in_array($this->role, ['admin', 'hr']);
-    // }
-
-    // public function getMonthlyAttendanceSummary($month = null, $year = null)
-    // {
-    //     $month = $month ?? now()->month;
-    //     $year = $year ?? now()->year;
-
-    //     $attendances = $this->attendances()->forMonth($month, $year)->get();
-
-    //     return [
-    //         'total_present' => $attendances->where('status', 'present')->count(),
-    //         'total_late' => $attendances->where('status', 'late')->count(),
-    //         'total_absent' => $attendances->where('status', 'absent')->count(),
-    //         'total_sick' => $attendances->where('status', 'sick')->count(),
-    //         'total_permission' => $attendances->where('status', 'permission')->count(),
-    //         'total_working_hours' => $attendances->sum('working_hours'),
-    //         'total_overtime_hours' => $attendances->sum('overtime_hours'),
-    //     ];
-    // }
+    public function getDepartmentIdAttribute()
+    {
+        return $this->position?->department_id;
+    }
 }

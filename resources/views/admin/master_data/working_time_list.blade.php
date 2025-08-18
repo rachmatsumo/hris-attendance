@@ -130,7 +130,7 @@
                 </div>
             </div>
 
-            <div class="mb-3 row">
+            {{-- <div class="mb-3 row">
 
                 <div class="col-12 col-md-12 mb-3"> 
                     <label class="form-label" for="is_location_limited">Lokasi</label>
@@ -140,12 +140,12 @@
                     </select>
                 </div> 
                     
-                {{-- <div class="col-6 col-md-6 mb-3">
+                <div class="col-6 col-md-6 mb-3">
                     <label for="color" class="form-label">Warna</label>
                     <input type="color" class="form-control" id="color" name="color" value="#fff">
-                </div>  --}}
+                </div> 
             
-            </div> 
+            </div>  --}}
 
             <div class="mb-3"> 
                 <label class="form-label" for="is_active">Status</label>
@@ -188,7 +188,7 @@
                     form.querySelector('#end_time').value = data.end_time;
                     form.querySelector('#late_tolerance_minutes').value = data.late_tolerance_minutes;
                     form.querySelector('#end_next_day').value = data.end_next_day;
-                    form.querySelector('#is_location_limited').value = data.is_location_limited;
+                    // form.querySelector('#is_location_limited').value = data.is_location_limited;
                     form.querySelector('#code').value = data.code; 
                     form.querySelector('#color').value = data.color; 
                     form.querySelector('#is_active').value = data.is_active;

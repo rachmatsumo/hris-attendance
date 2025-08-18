@@ -27,7 +27,7 @@ class Attendance extends Model
         'status',
         'late_minutes',
         'working_hours',
-        'overtime_hours',
+        'overtime_salary',
         'admin_notes'
     ];
 

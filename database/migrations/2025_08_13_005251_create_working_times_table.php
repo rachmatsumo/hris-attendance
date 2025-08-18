@@ -21,7 +21,7 @@ return new class extends Migration
             $table->time('break_start_time')->nullable();
             $table->time('break_end_time')->nullable();
             $table->integer('late_tolerance_minutes')->default(15);
-            $table->boolean('is_location_limited')->default(true);
+            // $table->boolean('is_location_limited')->default(true);
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });

@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
             WorkScheduleSeeder::class,
             AttendanceSeeder::class, 
             AttendancePermitSeeder::class, 
+            PayrollSeeder::class, 
         ]);
     }
 }

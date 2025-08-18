@@ -18,13 +18,13 @@ class LocationSeeder extends Seeder
                 'name' => 'Sepatan',
                 'lat_long' => '-6.1076327,106.5565591', 
                 'is_active' => true,
-                'radius' => 5,
+                'radius' => 2.5,
             ], 
             [
                 'name' => 'Tangerang Kota',
                 'lat_long' => '-6.1871047,106.6309931', 
                 'is_active' => true,
-                'radius' => 5,
+                'radius' => 3.5,
             ], 
         ];
 

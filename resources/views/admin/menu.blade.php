@@ -94,7 +94,7 @@
                 </a>
             </li> 
             <li>
-                <a href="{{ route('payroll.index') }}">
+                <a href="{{ route('payroll-admin.index') }}">
                     <div>
                         <span class="mb-0"><i class="bi bi-cash-stack mb-0"></i></span> Payroll Karyawan
                     </div>

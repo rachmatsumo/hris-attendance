@@ -35,10 +35,11 @@ return new class extends Migration
             $table->text('clock_out_notes')->nullable();
             
             // Status and Additional Info
-            $table->enum('status', ['present', 'late', 'absent', 'sick', 'permission', 'holiday', 'overtime'])->default('absent');
+            $table->enum('status', ['present', 'late', 'absent'])->default('absent');
             $table->integer('late_minutes')->default(0);
             $table->decimal('working_hours', 4, 2)->default(0);
-            $table->decimal('overtime_hours', 4, 2)->default(0);
+            // $table->decimal('overtime_hours', 4, 2)->default(0);
+            $table->integer('overtime_salary')->default(0);
             $table->text('admin_notes')->nullable();
             
             $table->timestamps();

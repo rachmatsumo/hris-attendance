@@ -25,13 +25,7 @@ class SettingSeeder extends Seeder
                 'value' => 'Tangerang, Indonesia',
                 'type' => 'string',
                 'description' => 'Alamat perusahaan',
-            ],
-            [
-                'key' => 'work_days_per_week',
-                'value' => '5',
-                'type' => 'integer',
-                'description' => 'Jumlah hari kerja per minggu',
-            ],
+            ], 
             [
                 'key' => 'work_hours_per_day',
                 'value' => '8',
@@ -40,10 +34,22 @@ class SettingSeeder extends Seeder
             ],
             [
                 'key' => 'overtime_rate',
-                'value' => '1.5',
-                'type' => 'string',
-                'description' => 'Rate lembur (kali dari gaji normal)',
+                'value' => '5000',
+                'type' => 'integer',
+                'description' => 'Rate lembur hanya dalam pengajuan (kali jam kerja)',
             ],   
+            [
+                'key' => 'weekend_overtime_rate',
+                'value' => '8000',
+                'type' => 'integer',
+                'description' => 'Rate lembur akhir pekan (otomatis kali jam kerja)',
+            ],
+            [
+                'key' => 'holiday_overtime_rate',
+                'value' => '15000',
+                'type' => 'integer',
+                'description' => 'Rate lembur hari libur (otomatis kali jam kerja)',
+            ], 
             [
                 'key' => 'annual_leave_quota',
                 'value' => '12',
@@ -87,29 +93,11 @@ class SettingSeeder extends Seeder
                 'description' => 'Tanggal payroll setiap bulan',
             ],
             [
-                'key' => 'weekend_overtime_rate',
-                'value' => '2.0',
-                'type' => 'string',
-                'description' => 'Rate lembur akhir pekan',
-            ],
-            [
-                'key' => 'holiday_overtime_rate',
-                'value' => '3.0',
-                'type' => 'string',
-                'description' => 'Rate lembur hari libur',
-            ], 
-            [
                 'key' => 'app_timezone',
                 'value' => 'Asia/Jakarta',
                 'type' => 'string',
                 'description' => 'Timezone aplikasi. WIB : Asia/Jakarta, WITA : Asia/Makassar, WIT : Asia/Jayapura',
-            ],  
-            [
-                'key' => 'min_work_hours_full_pay',
-                'value' => '7',
-                'type' => 'integer',
-                'description' => 'Minimum jam kerja untuk gaji penuh',
-            ],
+            ],   
             [
                 'key' => 'email_notifications',
                 'value' => '1',
@@ -121,6 +109,12 @@ class SettingSeeder extends Seeder
                 'value' => 'hr@company.com',
                 'type' => 'string',
                 'description' => 'Email untuk laporan otomatis',
+            ],
+            [
+                'key' => 'default_password',
+                'value' => 'password123',
+                'type' => 'string',
+                'description' => 'Password default untuk user baru',
             ]
         ];
 
