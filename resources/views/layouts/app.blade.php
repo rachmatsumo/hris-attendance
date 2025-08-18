@@ -55,7 +55,7 @@
                 <div class="d-flex justify-content-between py-2 w-100">
                     <div class="d-flex flex-column">
                         <h4>{{ @Auth::user()->name }}</h4>
-                        <span class="fs-7">{{ @Auth::user()->position->name }} <br> {{ @Auth::user()->department->name }}</span>
+                        <span class="fs-7">{{ @Auth::user()->position->name ?? '-' }} <br> {{ @Auth::user()->department->name ?? '-' }}</span>
                     </div>
                     <img src="{{ @Auth::user()->profile_photo 
                         ? asset('upload/avatar/' . @Auth::user()->profile_photo) 
