@@ -38,3 +38,5 @@
 ![Konfirmasi Absen](screenshots/pic4.png)
 ![Area Kerja](screenshots/pic5.png)
 ![Cuti dan Izin](screenshots/pic6.png)
+![Pengaturan App](screenshots/pic7.png)
+![Manage Cuti/Izin](screenshots/pic8.png)
