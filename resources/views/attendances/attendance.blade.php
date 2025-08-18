@@ -378,8 +378,9 @@
                     resetSubmitButton();
                 },
                 {
-                    timeout: 10000,
-                    enableHighAccuracy: false
+                    enableHighAccuracy: true,  
+                    timeout: 30000,            
+                    maximumAge: 0
                 }
             );
         } else {
