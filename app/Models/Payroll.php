@@ -75,7 +75,10 @@ class Payroll extends Model
 
     public function getPeriodAttribute()
     {
-        return Carbon::create()->month($this->month)->year($this->year)
+        $month = (int) $this->month;
+        $year = (int) $this->year;
+
+        return Carbon::create()->month($month)->year($year)
             ->locale('id')
             ->translatedFormat('F Y');
     }
