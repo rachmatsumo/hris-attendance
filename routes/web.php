@@ -12,7 +12,7 @@ use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\SettingController;
 
 
-Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+Route::get('/', [DashboardController::class, 'index'])->middleware('auth')->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     

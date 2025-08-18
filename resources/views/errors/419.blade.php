@@ -48,7 +48,7 @@
     <div class="error-container">
         <div class="error-code">419</div>
         <div class="error-message">Oops! Halaman kadaluwasa.</div>
-        <a href="{{ url()->previous() }}" class="btn-back">Kembali</a>
+        <a href="{{ route('dashboard') }}" class="btn-back">Kembali</a>
     </div>
 </body>
 </html>
