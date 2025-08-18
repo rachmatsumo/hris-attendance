@@ -20,9 +20,7 @@ class AttendanceSeeder extends Seeder
             // Random hadir: 80%
             if (rand(1, 100) <= 80) {
                 $shift = $schedule->workingTime;
-                if (!$shift) {
-                    continue;
-                }
+                if (!$shift) continue;
 
                 $workDate = Carbon::parse($schedule->work_date);
 
@@ -36,24 +34,26 @@ class AttendanceSeeder extends Seeder
                 }
 
                 // Clock in
-                $lateTolerance = $shift->late_tolerance_minutes ?? 0;
-                $clockInOffset = rand(-5, 5); // ±5 menit
-                $isLate = rand(0, 100) < 30; // 30% telat
-                $clockInTime = $startTime->copy()->addMinutes(
+                $lateTolerance  = (int) ($shift->late_tolerance_minutes ?? 0);
+                $clockInOffset  = rand(-5, 5); // ±5 menit
+                $isLate         = rand(0, 100) < 30; // 30% telat
+
+                $clockInTime = safeAddMinutes(
+                    $startTime->copy(),
                     $isLate ? $lateTolerance + rand(1, 10) : $clockInOffset
                 );
 
                 // Clock out random ±10 menit
-                $clockOutTime = $endTime->copy()->addMinutes(rand(-10, 10));
+                $clockOutTime = safeAddMinutes($endTime->copy(), rand(-10, 10));
 
                 // Hitung jam kerja aktual
-                $workingMinutesActual = $clockOutTime->diffInMinutes($clockInTime);
+                $workingMinutesActual = (float) $clockOutTime->diffInMinutes($clockInTime);
                 $workingHoursActual   = round($workingMinutesActual / 60, 2);
 
                 // Hitung keterlambatan
-                $graceTime = $startTime->copy()->addMinutes($lateTolerance);
+                $graceTime   = safeAddMinutes($startTime->copy(), $lateTolerance);
                 $lateMinutes = $clockInTime->greaterThan($graceTime)
-                    ? $graceTime->diffInMinutes($clockInTime)
+                    ? (float) $graceTime->diffInMinutes($clockInTime)
                     : 0;
 
                 // Hitung jam kerja shift efektif (dikurangi break)
@@ -65,9 +65,9 @@ class AttendanceSeeder extends Seeder
                     ? Carbon::parse($workDate->toDateString().' '.$shift->break_end_time)
                     : null;
 
-                $workDuration   = $endTime->diffInMinutes($startTime);
-                $breakDuration  = $breakStart && $breakEnd
-                    ? $breakEnd->diffInMinutes($breakStart)
+                $workDuration  = (float) $endTime->diffInMinutes($startTime);
+                $breakDuration = $breakStart && $breakEnd
+                    ? (float) $breakEnd->diffInMinutes($breakStart)
                     : 0;
                 $effectiveHours = round(($workDuration - $breakDuration) / 60, 2);
 
@@ -76,17 +76,17 @@ class AttendanceSeeder extends Seeder
                 $isWeekend = $workDate->isWeekend();
 
                 if ($isHoliday) {
-                    $rate = setting('holiday_overtime_rate');
+                    $rate  = (float) setting('holiday_overtime_rate');
                     $notes = 'Holiday';
                 } elseif ($isWeekend) {
-                    $rate = setting('weekend_overtime_rate');
+                    $rate  = (float) setting('weekend_overtime_rate');
                     $notes = 'Weekend';
                 } else {
-                    $rate = 0;
+                    $rate  = 0;
                     $notes = 'Weekday';
                 }
 
-                $overtimeSalary = $effectiveHours * $rate;
+                $overtimeSalary = abs($effectiveHours * $rate);
 
                 // Insert attendance
                 Attendance::create([
@@ -102,7 +102,7 @@ class AttendanceSeeder extends Seeder
                     'status'           => $lateMinutes > 0 ? 'late' : 'present',
                     'working_hours'    => $workingHoursActual,
                     'late_minutes'     => $lateMinutes,
-                    'overtime_salary'  => str_replace('-','',$overtimeSalary),
+                    'overtime_salary'  => $overtimeSalary,
                     'admin_notes'      => $notes,
                 ]);
             }
