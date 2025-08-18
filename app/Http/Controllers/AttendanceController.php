@@ -158,7 +158,7 @@ class AttendanceController extends Controller
         ));
     }
  
-   public function store(Request $request)
+    public function store(Request $request)
     {
         $type = $request->input('type'); // clock_in_time / clock_out_time
         $locationRequired = (int) setting('location_required', 0);
@@ -188,11 +188,14 @@ class AttendanceController extends Controller
 
         // Shift malam (+1 hari)
         if ($schedule?->workingTime?->end_next_day) {
-            $shiftEnd->addDay();
-            // Jika sekarang sebelum shift start, anggap tanggal attendance shift kemarin
-            if (now()->lessThan($shiftStart)) {
-                $shiftStart->subDay();
-                $shiftEnd->subDay();
+            $shiftStart = Carbon::parse($schedule?->workingTime?->start_time)
+                                ->setDateFrom($schedule?->work_date);
+            $shiftEnd = Carbon::parse($schedule?->workingTime?->end_time)
+                                ->setDateFrom($schedule?->work_date);
+
+            // Shift malam (+1 hari)
+            if ($schedule?->workingTime?->end_next_day) {
+                $shiftEnd->addDay();
             }
         }
 

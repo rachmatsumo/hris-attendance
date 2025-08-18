@@ -31,7 +31,7 @@ class WorkingTime extends Model
         'work_date' => 'datetime',
         'start_time' => 'datetime:H:i',
         'end_time' => 'datetime:H:i',
-         'late_tolerance_minutes' => 'integer',
+        'late_tolerance_minutes' => 'integer',
     ];
 
     public function getStartTimeAttribute($value)
@@ -49,6 +49,15 @@ class WorkingTime extends Model
         // Format jam:menit dari start_time dan end_time
         $start = \Carbon\Carbon::parse($this->start_time)->format('H:i');
         $end = \Carbon\Carbon::parse($this->end_time)->format('H:i');
+
+        return "{$start} - {$end}";
+    }
+
+    public function getBreakTimeAttribute()
+    {
+        // Format jam:menit dari start_time dan end_time
+        $start = \Carbon\Carbon::parse($this->break_start_time)->format('H:i');
+        $end = \Carbon\Carbon::parse($this->break_end_time)->format('H:i');
 
         return "{$start} - {$end}";
     }

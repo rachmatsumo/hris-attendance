@@ -23,8 +23,8 @@
                                 <tr>
                                     <th class="v-middle">Jam Kerja</th>
                                     <th class="v-middle">Kode</th>
-                                    <th class="v-middle">Masuk</th>
-                                    <th class="v-middle">Pulang</th>
+                                    <th class="v-middle">Jam Kerja</th>
+                                    <th class="v-middle">Jam Istrahat</th>
                                     <th class="v-middle">Option</th>
                                 </tr>
                             </thead>
@@ -33,8 +33,8 @@
                                 <tr>
                                     <td class="v-middle">{{ $a->name }}</td>
                                     <td class="v-middle">{{ $a->code }}</td>
-                                    <td class="v-middle">{{ $a->start_time }}</td>
-                                    <td class="v-middle">{{ $a->end_time }}</td> 
+                                    <td class="v-middle">{{ $a->schedule }}</td> 
+                                    <td class="v-middle">{{ $a->break_time }}</td> 
                                     <td>
                                         <div class="d-flex">
                                             <button class="btn btn-sm btn-light openModalInputBtn editDataBtn me-2"
