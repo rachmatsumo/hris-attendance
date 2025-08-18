@@ -114,9 +114,9 @@
                         </button>
                     </div>
 
-                    <div class="camera-container mb-3" style="position: relative; max-width: 400px;">
-                        <video id="video" width="100%" height="300" style="border: 2px solid #dee2e6; border-radius: 8px; display: none;" autoplay muted></video>
-                        <canvas id="canvas" width="400" height="300" style="border: 2px solid #dee2e6; border-radius: 8px; display: none;"></canvas>
+                    <div class="camera-container mb-3" style="position: relative; max-width: 100%;">
+                        <video id="video" width="100%" height="300" style="border: 2px solid #dee2e6; border-radius: 8px; display: none; max-width: 100%;" autoplay playsinline muted></video>
+                        <canvas id="canvas" width="400" height="300" style="border: 2px solid #dee2e6; border-radius: 8px; display: none; max-width: 100%;"></canvas>
                         <div id="cameraLoading" style="display: none; text-align: center; padding: 50px;">
                             <div class="spinner-border text-primary" role="status">
                                 <span class="visually-hidden">Loading...</span>
@@ -146,6 +146,7 @@
     let video = null;
     let canvas = null;
     let photoTaken = false;
+    let isProcessing = false; // Tambah flag untuk prevent double processing
 
     function openConfirmModal(type) {
         selectedType = type;
@@ -167,52 +168,142 @@
     // Camera Functions
     function resetCamera() {
         photoTaken = false;
+        isProcessing = false;
         document.getElementById('photoData').value = '';
         document.getElementById('photoStatus').style.display = 'block';
         document.getElementById('startCamera').disabled = false;
         document.getElementById('capturePhoto').disabled = true;
         document.getElementById('retakePhoto').style.display = 'none';
+        document.getElementById('confirmBtn').disabled = false;
         document.getElementById('video').style.display = 'none';
         document.getElementById('canvas').style.display = 'none';
-        if (stream) { stream.getTracks().forEach(track => track.stop()); stream = null; }
+        document.getElementById('cameraLoading').style.display = 'none';
+        
+        // Stop existing stream
+        if (stream) { 
+            stream.getTracks().forEach(track => track.stop()); 
+            stream = null; 
+        }
     }
 
     document.getElementById('startCamera').addEventListener('click', async () => {
+        if (isProcessing) return;
+        isProcessing = true;
+        
         document.getElementById('cameraLoading').style.display = 'block';
+        document.getElementById('startCamera').disabled = true;
+        
         try {
-            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 400, height: 300 } });
+            // Enhanced camera constraints for mobile compatibility
+            const constraints = {
+                video: {
+                    facingMode: { ideal: 'user' }, // Prefer front camera but fallback to any
+                    width: { ideal: 640, max: 1280 },
+                    height: { ideal: 480, max: 720 },
+                    frameRate: { ideal: 30, max: 30 }
+                }
+            };
+            
+            stream = await navigator.mediaDevices.getUserMedia(constraints);
             video = document.getElementById('video');
             video.srcObject = stream;
+            
+            // Wait for video metadata to load
             video.onloadedmetadata = () => {
-                document.getElementById('cameraLoading').style.display = 'none';
-                video.style.display = 'block';
-                document.getElementById('startCamera').disabled = true;
-                document.getElementById('capturePhoto').disabled = false;
+                console.log('Video metadata loaded');
+                video.play().then(() => {
+                    console.log('Video playing');
+                    document.getElementById('cameraLoading').style.display = 'none';
+                    video.style.display = 'block';
+                    document.getElementById('capturePhoto').disabled = false;
+                    isProcessing = false;
+                }).catch(err => {
+                    console.error('Error playing video:', err);
+                    handleCameraError('Tidak dapat memulai video kamera');
+                });
             };
+            
+            video.onerror = () => {
+                console.error('Video error occurred');
+                handleCameraError('Error pada video kamera');
+            };
+            
         } catch (err) {
-            document.getElementById('cameraLoading').style.display = 'none';
-            alert('Tidak dapat mengakses kamera. Pastikan Anda telah memberikan izin akses kamera.');
-            console.error(err);
+            console.error('Camera access error:', err);
+            handleCameraError('Tidak dapat mengakses kamera. Pastikan browser memiliki izin kamera dan menggunakan HTTPS.');
         }
     });
 
+    function handleCameraError(message) {
+        document.getElementById('cameraLoading').style.display = 'none';
+        document.getElementById('startCamera').disabled = false;
+        isProcessing = false;
+        alert(message);
+        
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
+        }
+    }
+
     document.getElementById('capturePhoto').addEventListener('click', () => {
-        canvas = document.getElementById('canvas');
-        const context = canvas.getContext('2d');
-        canvas.width = video.clientWidth;
-        canvas.height = video.clientHeight;
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const photoDataUrl = canvas.toDataURL('image/jpeg', 0.8);
-        document.getElementById('photoData').value = photoDataUrl;
+        if (isProcessing || !video || !stream) return;
+        isProcessing = true;
+        
+        try {
+            canvas = document.getElementById('canvas');
+            const context = canvas.getContext('2d');
+            
+            // Get actual video dimensions
+            const videoWidth = video.videoWidth;
+            const videoHeight = video.videoHeight;
+            
+            console.log('Video dimensions:', videoWidth, 'x', videoHeight);
+            
+            if (videoWidth === 0 || videoHeight === 0) {
+                throw new Error('Video dimensions not available');
+            }
+            
+            // Set canvas dimensions to match video
+            canvas.width = videoWidth;
+            canvas.height = videoHeight;
+            
+            // Draw the video frame to canvas
+            context.drawImage(video, 0, 0, videoWidth, videoHeight);
+            
+            // Convert to base64 with compression for mobile
+            const photoDataUrl = canvas.toDataURL('image/jpeg', 0.7); // Lower quality for mobile
+            
+            // Validate image data
+            if (!photoDataUrl || photoDataUrl === 'data:,') {
+                throw new Error('Failed to capture image data');
+            }
+            
+            document.getElementById('photoData').value = photoDataUrl;
 
-        video.style.display = 'none';
-        canvas.style.display = 'block';
-        document.getElementById('capturePhoto').disabled = true;
-        document.getElementById('retakePhoto').style.display = 'inline-block';
-        document.getElementById('photoStatus').style.display = 'none';
-        photoTaken = true;
+            // Update UI
+            video.style.display = 'none';
+            canvas.style.display = 'block';
+            document.getElementById('capturePhoto').disabled = true;
+            document.getElementById('retakePhoto').style.display = 'inline-block';
+            document.getElementById('photoStatus').style.display = 'none';
+            photoTaken = true;
 
-        if (stream) { stream.getTracks().forEach(track => track.stop()); stream = null; }
+            console.log('Photo captured successfully, data length:', photoDataUrl.length);
+
+            // Stop stream after capture
+            if (stream) { 
+                stream.getTracks().forEach(track => track.stop()); 
+                stream = null; 
+            }
+            
+        } catch (err) {
+            console.error('Error capturing photo:', err);
+            alert('Gagal mengambil foto: ' + err.message);
+            photoTaken = false;
+        } finally {
+            isProcessing = false;
+        }
     });
 
     document.getElementById('retakePhoto').addEventListener('click', () => {
@@ -222,15 +313,22 @@
         document.getElementById('photoStatus').style.display = 'block';
         document.getElementById('startCamera').disabled = false;
         photoTaken = false;
+        isProcessing = false;
     });
 
     document.getElementById('confirmBtn').addEventListener('click', () => {
+        if (isProcessing) {
+            console.log('Already processing, ignoring click');
+            return;
+        }
 
         const photoRequired = (selectedType === 'clock_in_time') 
             ? {{ setting('photo_required_clock_in', 0) }} 
             : {{ setting('photo_required_clock_out', 0) }};
 
-        console.log(photoRequired);
+        console.log('Photo required:', photoRequired);
+        console.log('Photo taken:', photoTaken);
+        console.log('Photo data length:', document.getElementById('photoData').value.length);
 
         if (photoRequired && (!photoTaken || !document.getElementById('photoData').value)) {
             alert('Silakan ambil foto terlebih dahulu!');
@@ -238,9 +336,19 @@
             return;
         }
 
+        // Disable button to prevent double submission
+        document.getElementById('confirmBtn').disabled = true;
+        document.getElementById('confirmBtn').innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Memproses...';
+        
+        isProcessing = true;
+
         const form = document.getElementById('attendanceForm');
 
-        // input type
+        // Clean up existing type inputs
+        const existingTypeInputs = form.querySelectorAll('input[name="type"]');
+        existingTypeInputs.forEach(input => input.remove());
+
+        // Add type input
         let typeInput = document.createElement('input');
         typeInput.type = 'hidden';
         typeInput.name = 'type';
@@ -249,61 +357,106 @@
 
         @if(setting('location_required') == '1')
         if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(pos => {
-                let locInput = document.createElement('input');
-                locInput.type = 'hidden';
-                locInput.name = 'location_lat_long';
-                locInput.value = pos.coords.latitude + ',' + pos.coords.longitude;
-                form.appendChild(locInput);
-                form.submit();
-            });
+            navigator.geolocation.getCurrentPosition(
+                pos => {
+                    // Clean up existing location inputs
+                    const existingLocInputs = form.querySelectorAll('input[name="location_lat_long"]');
+                    existingLocInputs.forEach(input => input.remove());
+                    
+                    let locInput = document.createElement('input');
+                    locInput.type = 'hidden';
+                    locInput.name = 'location_lat_long';
+                    locInput.value = pos.coords.latitude + ',' + pos.coords.longitude;
+                    form.appendChild(locInput);
+                    
+                    console.log('Submitting form with location');
+                    form.submit();
+                },
+                error => {
+                    console.error('Geolocation error:', error);
+                    alert('Gagal mendapatkan lokasi. Coba lagi.');
+                    resetSubmitButton();
+                },
+                {
+                    timeout: 10000,
+                    enableHighAccuracy: false
+                }
+            );
         } else {
+            console.log('Geolocation not supported, submitting form');
             form.submit();
         }
         @else
+        console.log('Submitting form without location');
         form.submit();
         @endif
     });
 
+    function resetSubmitButton() {
+        document.getElementById('confirmBtn').disabled = false;
+        document.getElementById('confirmBtn').innerHTML = 'Konfirmasi';
+        isProcessing = false;
+    }
+
+    // Clean up when modal is hidden
     document.getElementById('confirmModal').addEventListener('hidden.bs.modal', () => {
         if (stream) { 
             stream.getTracks().forEach(track => track.stop()); 
             stream = null; 
         }
-    });
-
-    document.getElementById('confirmModal').addEventListener('hidden.bs.modal',()=>{
-        if(stream){ 
-            stream.getTracks().forEach(t=>t.stop()); 
-            stream=null; 
-        }
+        resetSubmitButton();
     });
 
 @if(setting('location_required') == '1')
 function initMap(){
-    const mapDiv=document.getElementById('map');
-    if(map){ map.remove(); map=null; }
-    mapDiv.innerHTML='';
-    setTimeout(()=>{
-        let lat={{ $locations->first()?->lat_long ? explode(',',$locations->first()->lat_long)[0] : 0 }};
-        let lng={{ $locations->first()?->lat_long ? explode(',',$locations->first()->lat_long)[1] : 0 }};
-        map=L.map('map').setView([lat,lng],15);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
+    const mapDiv = document.getElementById('map');
+    if(map){ 
+        map.remove(); 
+        map = null; 
+    }
+    mapDiv.innerHTML = '';
+    
+    setTimeout(() => {
+        let lat = {{ $locations->first()?->lat_long ? explode(',',$locations->first()->lat_long)[0] : 0 }};
+        let lng = {{ $locations->first()?->lat_long ? explode(',',$locations->first()->lat_long)[1] : 0 }};
+        
+        map = L.map('map').setView([lat, lng], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
 
         @foreach($locations as $loc)
         @if($loc->is_active && $loc->lat_long)
-        var c="{{ $loc->lat_long }}".split(','); L.circle([parseFloat(c[0]),parseFloat(c[1])],{color:'green',fillColor:'lightgreen',fillOpacity:0.15,weight:2,radius:{{ $loc->radius??1 }}*1000}).addTo(map).bindTooltip("{{ $loc->name }} (Radius: {{ $loc->radius??1 }} km)");
+        var coords = "{{ $loc->lat_long }}".split(',');
+        L.circle([parseFloat(coords[0]), parseFloat(coords[1])], {
+            color: 'green',
+            fillColor: 'lightgreen',
+            fillOpacity: 0.15,
+            weight: 2,
+            radius: {{ $loc->radius ?? 1 }} * 1000
+        }).addTo(map).bindTooltip("{{ $loc->name }} (Radius: {{ $loc->radius ?? 1 }} km)");
         @endif
         @endforeach
 
-        if(navigator.geolocation){
-            navigator.geolocation.getCurrentPosition(pos=>{
-                let uLat=pos.coords.latitude, uLng=pos.coords.longitude;
-                L.marker([uLat,uLng],{icon:L.icon({iconUrl:'https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers@master/img/marker-icon-red.png',iconSize:[25,41],iconAnchor:[12,41],popupAnchor:[1,-34]})}).addTo(map).bindPopup("📍 Lokasi Anda Saat Ini").openPopup();
-                map.setView([uLat,uLng],16);
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(pos => {
+                let userLat = pos.coords.latitude;
+                let userLng = pos.coords.longitude;
+                
+                L.marker([userLat, userLng], {
+                    icon: L.icon({
+                        iconUrl: 'https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers@master/img/marker-icon-red.png',
+                        iconSize: [25, 41],
+                        iconAnchor: [12, 41],
+                        popupAnchor: [1, -34]
+                    })
+                }).addTo(map).bindPopup("📍 Lokasi Anda Saat Ini").openPopup();
+                
+                map.setView([userLat, userLng], 16);
             });
         }
-    },100);
+    }, 100);
 }
 @endif
 </script>
@@ -379,11 +532,9 @@ function initMap(){
     });
 </script>
 
-
 <!-- Leaflet & FontAwesome -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
 
 @endsection
