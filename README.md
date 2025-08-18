@@ -9,6 +9,7 @@
     <li>Salin file <code>.env.example</code> menjadi <code>.env</code></li>
     <li>Set konfigurasi environment di file <code>.env</code></li>
     <li>Generate app key: <code>php artisan key:generate</code></li>
+    <li>Buat symbolic link: <code>php artisan storage:link</code></li>
     <li>Jalankan: <code>composer install</code></li>
     <li>Jalankan: <code>npm install</code></li>
     <li>Jalankan: <code>npm run build</code></li>
@@ -24,7 +25,7 @@
         Password: <code>password123</code>
     </li>
     <li><strong>User</strong><br>
-        Email: <code>david.brown@hris.com</code><br>
+        Email: Periksa daftar karyawan<br>
         Password: <code>password123</code>
     </li>
 </ul>
