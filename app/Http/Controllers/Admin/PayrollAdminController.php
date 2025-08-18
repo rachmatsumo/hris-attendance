@@ -18,7 +18,9 @@ class PayrollAdminController extends Controller
     {
         $month = $request->input('month') ?? date('Y-m');
         $carbon = Carbon::createFromFormat('Y-m', $month);
-        $users = User::with('position')->where('is_active', 1)->get(); 
+        // $users = User::with('position')->where('is_active', 1)->get(); 
+        $users = User::excludeRoles(['admin','hr'])->where('is_active', 1)->orderBy('name')->paginate(10);
+
         
         $year_select  = $carbon->year;    
         $month_select = $carbon->month;  

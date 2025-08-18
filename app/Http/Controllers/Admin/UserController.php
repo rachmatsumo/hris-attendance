@@ -15,7 +15,8 @@ class UserController extends Controller
 {
     public function index()
     {
-        $employees = User::orderBy('name')->paginate(10);
+        $employees = User::excludeRoles(['admin','hr'])->orderBy('name')->paginate(10);
+
         $positions = Position::all();
         $departments = Department::all();
 

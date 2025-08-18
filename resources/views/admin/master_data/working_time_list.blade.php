@@ -98,7 +98,7 @@
                     
                 <div class="col-4 col-md-2 mb-3">
                     <label for="color" class="form-label">Warna</label>
-                    <input type="color" class="form-control" id="color" name="color" value="#fff">
+                    <input type="color" class="form-control" id="color" name="color" value="#68288fff">
                 </div> 
             
             </div>  
@@ -112,6 +112,18 @@
                 <div class="col-6 col-md-66 mb-3">
                     <label for="end_time" class="form-label">Pulang</label>
                     <input type="time" class="form-control" id="end_time" name="end_time" required>
+                </div>
+            </div>
+            
+            <div class="mb-3 row">
+                <div class="mb-3 col-6 col-md-6">
+                    <label for="break_start_time" class="form-label">Jam Mulai Istrahat</label>
+                    <input type="time" class="form-control" id="break_start_time" name="break_start_time" required>
+                </div>
+                
+                <div class="col-6 col-md-66 mb-3">
+                    <label for="break_end_time" class="form-label">Jam Akhir Istrahat</label>
+                    <input type="time" class="form-control" id="break_end_time" name="break_end_time" required>
                 </div>
             </div>
                 
@@ -186,6 +198,8 @@
                     form.querySelector('#name').value = data.name;
                     form.querySelector('#start_time').value = data.start_time;
                     form.querySelector('#end_time').value = data.end_time;
+                    form.querySelector('#break_start_time').value = data.break_start_time;
+                    form.querySelector('#break_end_time').value = data.break_end_time;
                     form.querySelector('#late_tolerance_minutes').value = data.late_tolerance_minutes;
                     form.querySelector('#end_next_day').value = data.end_next_day;
                     // form.querySelector('#is_location_limited').value = data.is_location_limited;
@@ -198,4 +212,34 @@
         }
     });
 </script>
+
+ {{-- <script>
+    flatpickr("#start_time", {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "H:i", // 24 jam
+        time_24hr: true
+    });
+
+    flatpickr("#end_time", {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "H:i", // 24 jam
+        time_24hr: true
+    });
+    flatpickr("#break_start_time", {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "H:i", // 24 jam
+        time_24hr: true
+    });
+
+    flatpickr("#break_end_time", {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "H:i", // 24 jam
+        time_24hr: true
+    });
+</script> --}}
+
 @endsection
