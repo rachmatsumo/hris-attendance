@@ -31,6 +31,7 @@ class WorkingTime extends Model
         'work_date' => 'datetime',
         'start_time' => 'datetime:H:i',
         'end_time' => 'datetime:H:i',
+         'late_tolerance_minutes' => 'integer',
     ];
 
     public function getStartTimeAttribute($value)
