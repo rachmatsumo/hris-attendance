@@ -48,8 +48,18 @@
     <div id="app">
         <nav class="navbar navbar-top navbar-expand-md navbar-light bg-gradient-blue border-none">
             <div class="container-fluid px-4 flex-column align-items-start">
-                <a class="navbar-brand text-white fs-6 mb-2" href="{{ url('/') }}">
+                <a class="navbar-brand text-white fs-6 mb-2 d-flex justify-content-between w-100" href="{{ url('/') }}">
                    {{ setting('company_name') }} - {{ config('app.name', 'Laravel') }}
+                   <div class="d-none">
+                        <button type="button" class="btn btn-transparent rounded-5" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-bell"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><button class="dropdown-item" type="button">Action</button></li>
+                            <li><button class="dropdown-item" type="button">Another action</button></li>
+                            <li><button class="dropdown-item" type="button">Something else here</button></li>
+                        </ul>
+                    </div>
                 </a>
 
                 <div class="d-flex justify-content-between py-2 w-100">

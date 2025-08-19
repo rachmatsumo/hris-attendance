@@ -132,7 +132,7 @@ class Payroll extends Model
             ->get();
 
         $totalWorkingDays  = $attendances->count();
-        $totalPresentDays  = $attendances->where('status', 'present')->count();
+        $totalPresentDays  = $attendances->where('status', 'present')->whereNotNull('clock_out_time')->count();
         $totalLateDays     = $attendances->where('status', 'late')->count();
         $totalAbsentDays   = $attendances->where('status', 'absent')->count();
         $totalWorkingHours = $attendances->sum('working_hours');

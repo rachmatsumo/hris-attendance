@@ -118,7 +118,7 @@ class AttendanceController extends Controller
 
             $clockInWindow = [
                 'start' => $shiftStart->copy()->subHours(2)->toISOString(),
-                'end' => $shiftStart->copy()->addHours(1)->toISOString(),
+                'end' => $shiftStart->copy()->addHours(2)->toISOString(),
             ];
             
             $clockOutWindow = [
@@ -164,6 +164,7 @@ class AttendanceController extends Controller
         $locationRequired = (int) setting('location_required', 0);
         $photoClockInRequire = (int) setting('photo_required_clock_in', 0);
         $photoClockOutRequire = (int) setting('photo_required_clock_out', 0);
+        
         // Validasi wajib foto
         if (!$request->photo) {
             if(($type=='clock_in_time' && $photoClockInRequire) || ($type=='clock_out_time' && $photoClockOutRequire)){
@@ -171,41 +172,80 @@ class AttendanceController extends Controller
             }
         }
 
-        // Ambil jadwal hari ini
-        $schedule = WorkSchedule::with('workingTime')
+        $now = Carbon::now();
+        
+        // PERBAIKAN: Cari schedule yang aktif saat ini (bukan hanya hari ini)
+        // Ambil schedule dari 2 hari sebelumnya hingga hari ini untuk cover shift malam
+        $schedules = WorkSchedule::with('workingTime')
             ->where('user_id', Auth::id())
-            ->whereDate('work_date', today())
-            ->first();
+            ->whereIn('work_date', [
+                today()->subDays(2),
+                today()->subDay(),
+                today()
+            ])
+            ->get();
 
-        if (!$schedule) {
-            return redirect()->back()->with('error', 'Jadwal kerja tidak ditemukan untuk hari ini.');
-        }
+        // Cari schedule yang sedang aktif berdasarkan window waktu
+        $activeSchedule = null;
+        foreach ($schedules as $schedule) {
+            if (!$schedule->workingTime) continue;
 
-        $shiftStart = Carbon::parse($schedule?->workingTime?->start_time)
-                            ->setDateFrom($schedule?->work_date);
-        $shiftEnd = Carbon::parse($schedule?->workingTime?->end_time)
-                            ->setDateFrom($schedule?->work_date);
+            $shiftStart = Carbon::parse($schedule->workingTime->start_time)
+                                ->setDateFrom($schedule->work_date);
+            $shiftEnd = Carbon::parse($schedule->workingTime->end_time)
+                                ->setDateFrom($schedule->work_date);
 
-        // Shift malam (+1 hari)
-        if ($schedule?->workingTime?->end_next_day) {
-            $shiftStart = Carbon::parse($schedule?->workingTime?->start_time)
-                                ->setDateFrom($schedule?->work_date);
-            $shiftEnd = Carbon::parse($schedule?->workingTime?->end_time)
-                                ->setDateFrom($schedule?->work_date);
-
-            // Shift malam (+1 hari)
-            if ($schedule?->workingTime?->end_next_day) {
+            if ($schedule->workingTime->end_next_day) {
                 $shiftEnd->addDay();
+            }
+
+            // Extended window untuk absensi
+            $clockInStart = $shiftStart->copy()->subHours(2);
+            $clockOutEnd = $shiftEnd->copy()->addHours(5);
+
+            // Jika waktu sekarang dalam window absensi
+            if ($now->between($clockInStart, $clockOutEnd)) {
+                $activeSchedule = $schedule;
+                break;
             }
         }
 
-        // Tentukan tanggal attendance (shift start date)
-        $attendanceDate = $shiftStart->toDateString();
+        // Fallback: jika tidak ada schedule aktif, cari yang terdekat
+        if (!$activeSchedule) {
+            $activeSchedule = $schedules->sortBy(function($schedule) use ($now) {
+                if (!$schedule->workingTime) return PHP_INT_MAX;
+
+                $shiftStart = Carbon::parse($schedule->workingTime->start_time)
+                                    ->setDateFrom($schedule->work_date);
+                
+                return abs($now->diffInMinutes($shiftStart));
+            })->first();
+        }
+
+        if (!$activeSchedule) {
+            return redirect()->back()->with('error', 'Jadwal kerja tidak ditemukan.');
+        }
+
+        // Gunakan schedule yang ditemukan
+        $schedule = $activeSchedule;
+
+        $shiftStart = Carbon::parse($schedule->workingTime->start_time)
+                            ->setDateFrom($schedule->work_date);
+        $shiftEnd = Carbon::parse($schedule->workingTime->end_time)
+                            ->setDateFrom($schedule->work_date);
+
+        // Shift malam (+1 hari)
+        if ($schedule->workingTime->end_next_day) {
+            $shiftEnd->addDay();
+        }
+
+        // PENTING: Tentukan tanggal attendance berdasarkan work_date schedule (bukan hari ini)
+        $attendanceDate = Carbon::parse($schedule->work_date)->toDateString();
 
         // Ambil atau buat record attendance
         $attendance = Attendance::firstOrNew([
             'user_id' => Auth::id(),
-            'date' => $attendanceDate,
+            'date' => $attendanceDate, // Menggunakan tanggal schedule, bukan today()
         ]);
         $attendance->work_schedule_id = $schedule->id;
 
@@ -243,7 +283,6 @@ class AttendanceController extends Controller
         // CLOCK IN
         // ====================
         if ($type === 'clock_in_time' && !$attendance->clock_in_time) {
-            $now = now();
             $earliestClockIn = $shiftStart->copy()->subHours(2); // 2 jam sebelum shift start
 
             if ($now->lessThan($earliestClockIn)) {
@@ -271,7 +310,6 @@ class AttendanceController extends Controller
         // CLOCK OUT
         // ====================
         if ($type === 'clock_out_time') {
-            $now = now();
             $latestClockOut = $shiftEnd->copy()->addHours(5); // 5 jam setelah shift end
 
             if ($now->greaterThan($latestClockOut)) {
