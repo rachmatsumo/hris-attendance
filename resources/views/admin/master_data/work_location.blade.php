@@ -298,6 +298,11 @@ function getCurrentLocation() {
         }, function(error) {
             console.error("Error getting location:", error);
             alert("Tidak dapat mengakses lokasi. Pastikan izin lokasi sudah diberikan.");
+        },
+        {
+                enableHighAccuracy: true,  
+                timeout: 30000,            
+                maximumAge: 0
         });
     } else {
         alert("Geolocation tidak didukung oleh browser ini.");

@@ -174,7 +174,6 @@ class AttendanceController extends Controller
 
         $now = Carbon::now();
         
-        // PERBAIKAN: Cari schedule yang aktif saat ini (bukan hanya hari ini)
         // Ambil schedule dari 2 hari sebelumnya hingga hari ini untuk cover shift malam
         $schedules = WorkSchedule::with('workingTime')
             ->where('user_id', Auth::id())
@@ -183,10 +182,12 @@ class AttendanceController extends Controller
                 today()->subDay(),
                 today()
             ])
+            ->orderBy('work_date', 'desc') // Urutkan dari yang terbaru
             ->get();
 
-        // Cari schedule yang sedang aktif berdasarkan window waktu
-        $activeSchedule = null;
+        // Cari semua schedule yang dalam window absensi
+        $activeSchedules = collect();
+        
         foreach ($schedules as $schedule) {
             if (!$schedule->workingTime) continue;
 
@@ -205,8 +206,51 @@ class AttendanceController extends Controller
 
             // Jika waktu sekarang dalam window absensi
             if ($now->between($clockInStart, $clockOutEnd)) {
-                $activeSchedule = $schedule;
-                break;
+                $activeSchedules->push($schedule);
+            }
+        }
+
+        // Pilih schedule berdasarkan prioritas
+        $activeSchedule = null;
+        
+        if ($activeSchedules->isNotEmpty()) {
+            // LOGIC PRIORITAS UNTUK PEMILIHAN SCHEDULE:
+            
+            if ($type === 'clock_in_time') {
+                // UNTUK CLOCK IN: Prioritaskan schedule yang belum ada clock_in
+                $availableSchedules = $activeSchedules->filter(function($schedule) {
+                    $attendance = Attendance::where('user_id', Auth::id())
+                        ->where('date', Carbon::parse($schedule->work_date)->toDateString())
+                        ->first();
+                    
+                    return !$attendance || !$attendance->clock_in_time;
+                });
+                
+                // Jika ada schedule yang belum clock_in, pilih yang paling dekat dengan hari ini
+                if ($availableSchedules->isNotEmpty()) {
+                    $activeSchedule = $availableSchedules->sortByDesc('work_date')->first();
+                } else {
+                    // Jika semua sudah clock_in, pilih yang terbaru
+                    $activeSchedule = $activeSchedules->sortByDesc('work_date')->first();
+                }
+                
+            } else if ($type === 'clock_out_time') {
+                // UNTUK CLOCK OUT: Prioritaskan schedule yang sudah clock_in tapi belum clock_out
+                $pendingSchedules = $activeSchedules->filter(function($schedule) {
+                    $attendance = Attendance::where('user_id', Auth::id())
+                        ->where('date', Carbon::parse($schedule->work_date)->toDateString())
+                        ->first();
+                    
+                    return $attendance && $attendance->clock_in_time && !$attendance->clock_out_time;
+                });
+                
+                if ($pendingSchedules->isNotEmpty()) {
+                    // Pilih yang sudah clock_in tapi belum clock_out
+                    $activeSchedule = $pendingSchedules->sortByDesc('work_date')->first();
+                } else {
+                    // Fallback: pilih schedule terbaru yang dalam window
+                    $activeSchedule = $activeSchedules->sortByDesc('work_date')->first();
+                }
             }
         }
 
@@ -239,13 +283,13 @@ class AttendanceController extends Controller
             $shiftEnd->addDay();
         }
 
-        // PENTING: Tentukan tanggal attendance berdasarkan work_date schedule (bukan hari ini)
+        // Tentukan tanggal attendance berdasarkan work_date schedule
         $attendanceDate = Carbon::parse($schedule->work_date)->toDateString();
 
         // Ambil atau buat record attendance
         $attendance = Attendance::firstOrNew([
             'user_id' => Auth::id(),
-            'date' => $attendanceDate, // Menggunakan tanggal schedule, bukan today()
+            'date' => $attendanceDate,
         ]);
         $attendance->work_schedule_id = $schedule->id;
 
@@ -335,7 +379,6 @@ class AttendanceController extends Controller
         return redirect()->route('attendances.index')
             ->with('success', ucfirst(str_replace('_', ' ', $type)) . ' recorded');
     }
-
     // Simpan foto base64
     protected function savePhoto($photoData)
     {
