@@ -62,9 +62,9 @@
                 <a class="navbar-brand text-white fs-6 mb-2 d-flex justify-content-between w-100" href="{{ url('/') }}">
                    {{ setting('company_name') }} - {{ config('app.name', 'Laravel') }}
                    <!-- Install PWA Button in Navbar -->
-                   <button id="install-btn-nav" style="display: none;" class="btn btn-sm btn-light rounded-pill">
+                   {{-- <button id="install-btn-nav" style="display: none;" class="btn btn-sm btn-light rounded-pill">
                        <i class="bi bi-download"></i> Install
-                   </button>
+                   </button> --}}
                 </a>
 
                 <div class="d-flex justify-content-between py-2 w-100">
@@ -133,9 +133,9 @@
                     </div>
                     <div class="col-12 col-md-6 text-center text-md-end">
                         <!-- Install PWA Button in Footer -->
-                        <button id="install-btn-footer" style="display: none;" class="btn btn-primary mb-2 w-100 w-md-auto">
+                        {{-- <button id="install-btn-footer" style="display: none;" class="btn btn-primary mb-2 w-100 w-md-auto">
                             <i class="bi bi-download"></i> Install Aplikasi
-                        </button>
+                        </button> --}}
                         <div class="small text-muted">
                             <div>&copy; {{ date('Y') }} All Rights Reserved</div>
                             <div>Version 1.0.0</div>
