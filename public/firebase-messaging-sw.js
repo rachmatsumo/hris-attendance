@@ -5,7 +5,7 @@ importScripts('https://www.gstatic.com/firebasejs/10.13.0/firebase-messaging-com
 const cacheName = 'HRIS';
 const toCache = [ 
     'manifest.json',  
-    'logo.png', 
+    'img/icons/icon-512x512.png', 
     'offline.html',
 ];  
 
@@ -41,22 +41,37 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-messaging.onBackgroundMessage(function(payload) {
-  const notificationTitle = payload.notification.title;
-  const notificationBody  = payload.notification.body;
-  const notificationImage = payload.notification.image || null;
+// messaging.onBackgroundMessage(function(payload) {
+//   const notificationTitle = payload.notification.title;
+//   const notificationBody  = payload.notification.body;
+//   const notificationImage = payload.notification.image || null;
 
-  const notificationOptions = {
-    body: notificationBody,
+//   const notificationOptions = {
+//     body: notificationBody,
+//     icon: "img/icons/icon-144x144.png",
+//     badge: "img/icons/icon-144x144.png",
+//     image: notificationImage, // kalau ada gambar akan ditampilkan
+//     data: {
+//       url: payload.data && payload.data.url ? payload.data.url : '/',
+//     }
+//   };
+
+//   self.registration.showNotification(notificationTitle, notificationOptions);
+// });
+
+messaging.onBackgroundMessage(function(payload) {
+  console.log("[SW] Message received: ", payload);
+
+  const title = payload.data.title || "HRIS";
+  const options = {
+    body: payload.data.body || "",
     icon: "img/icons/icon-144x144.png",
     badge: "img/icons/icon-144x144.png",
-    image: notificationImage, // kalau ada gambar akan ditampilkan
-    data: {
-      url: payload.data && payload.data.url ? payload.data.url : '/',
-    }
+    image: payload.data.image || null,
+    data: { url: payload.data.url || "/" }
   };
 
-  self.registration.showNotification(notificationTitle, notificationOptions);
+  self.registration.showNotification(title, options);
 });
 
 

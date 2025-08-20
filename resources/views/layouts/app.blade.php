@@ -233,7 +233,6 @@
             }
         });
 
-         
         function saveToken(token){ 
             console.log(token);
             $.ajax({
@@ -364,8 +363,8 @@
             // Show success notification
             if (typeof Swal !== 'undefined') {
                 Swal.fire({
-                    title: 'Aplikasi Terinstall!',
-                    text: 'Aplikasi HRIS berhasil diinstall di perangkat Anda',
+                    title: 'Aplikasi HRIS sedang dipasang',
+                    text: 'Tunggu sebentar, instalasi sedang berlangsung. Periksa notifikasi bar anda untuk mengetahui status pemasangan.',
                     icon: 'success',
                     timer: 3000,
                     showConfirmButton: false
