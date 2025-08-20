@@ -4,7 +4,7 @@ importScripts('https://www.gstatic.com/firebasejs/10.13.0/firebase-messaging-com
 
 const cacheName = 'HRIS';
 const toCache = [ 
-    'web-manifest.json',  
+    'manifest.json',  
     'logo.png', 
     'offline.html',
 ];  
@@ -31,38 +31,34 @@ self.addEventListener('fetch', event => {
 });
 
 firebase.initializeApp({ 
-        apiKey: "AIzaSyBF58PzNmV6ME9Jllh61IlS2aZwTDbw0Lc",
-        authDomain: "testing-74d37.firebaseapp.com",
-        projectId: "testing-74d37",
-        storageBucket: "testing-74d37.appspot.com",
-        messagingSenderId: "874368827370",
-        appId: "1:874368827370:web:d5a4e20ca7034898257c93",
-        measurementId: "G-ZZ5NRGLVGR"
-    });
+    apiKey: "AIzaSyBvzVzw7BVJvqJKQsOSjKEU4n0S7ZQOPIw",
+    authDomain: "busogi-ee864.firebaseapp.com",
+    projectId: "busogi-ee864",
+    storageBucket: "busogi-ee864.firebasestorage.app",
+    messagingSenderId: "558198634073",
+    appId: "1:558198634073:web:41835adbd3bc59bc522348"
+});
 
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage(function(payload) {
-//   console.log('[firebase-messaging-sw.js] Received background message ', payload);
-
   const notificationTitle = payload.notification.title;
-  const notificationBody = payload.notification.body; 
- 
-  const notificationURL = payload.data && payload.data.url ? payload.data.url : null;
-  const clickAction = payload.data && payload.data.click_action ? payload.data.click_action : null;
+  const notificationBody  = payload.notification.body;
+  const notificationImage = payload.notification.image || null;
 
   const notificationOptions = {
-    title: notificationTitle,
     body: notificationBody,
-    badge : "logo.png", 
-      data: {
-          url: notificationURL,
-          click_action: clickAction
-      }
+    icon: "img/icons/icon-144x144.png",
+    badge: "img/icons/icon-144x144.png",
+    image: notificationImage, // kalau ada gambar akan ditampilkan
+    data: {
+      url: payload.data && payload.data.url ? payload.data.url : '/',
+    }
   };
 
   self.registration.showNotification(notificationTitle, notificationOptions);
 });
+
 
 self.addEventListener('notificationclick', function(event) {
   event.notification.close();

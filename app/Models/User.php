@@ -141,4 +141,9 @@ class User extends Authenticatable
     {
         return $this->position?->department_id;
     }
+
+    public function fcmTokens()
+    {
+        return $this->hasMany(UserFcmToken::class);
+    }
 }

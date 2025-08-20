@@ -10,18 +10,23 @@ use App\Http\Controllers\AttendancePermitController;
 use App\Http\Controllers\LeaveRequestController;
 use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\NotificationController;
 
 
 Route::get('/', [DashboardController::class, 'index'])->middleware('auth')->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     
-    Route::resource('account', AccountController::class)->only(['update']);
     Route::get('account/menu', [AccountController::class, 'index'])->name('account.index');
     Route::get('account/edit', [AccountController::class, 'edit'])->name('account.edit');
     Route::get('account/change-password', [AccountController::class, 'changePassword'])->name('account.change-password');
     Route::get('account/payroll', [AccountController::class, 'payrollIndex'])->name('account.payroll');
+    Route::post('account/save-fcm-token', [AccountController::class, 'saveFcmToken'])->name('account.save-fcm-token'); 
+    Route::resource('account', AccountController::class)->only(['update']);
     
+    Route::get('/test-notification', [NotificationController::class, 'index']);
+    Route::post('/send-notification', [NotificationController::class, 'sendToUser']); 
+
     // Absensi
     Route::get('attendances/log', [AttendanceController::class, 'log'])->name('attendances.log');
     Route::resource('attendances', AttendanceController::class)->only(['index', 'store', 'update']);

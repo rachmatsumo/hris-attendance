@@ -60,7 +60,7 @@
 }
 body {
     padding-top: var(--navbar-height, 140px);
-    padding-bottom: var(--navbar-height, 60px);
+    /* padding-bottom: var(--navbar-height, 60px); */
 }
 .bottom-bar {
     position: fixed;
@@ -150,3 +150,41 @@ body {
     font-family: inherit;
 }
 
+
+/* PWA Specific Styles */
+.footer {
+    margin-bottom: 60px; /* Space for bottom navigation */
+}
+
+@media (display-mode: standalone) {
+    .footer {
+        margin-bottom: 60px; /* Less margin when installed as PWA */
+    }
+}
+
+#pwa-install-card {
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#install-btn-nav {
+    transition: all 0.3s ease;
+}
+
+#install-btn-nav:hover {
+    transform: scale(1.05);
+}
+
+main{
+    min-height :70vh!important;
+}

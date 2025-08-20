@@ -1,0 +1,64 @@
+{
+  "name": "Attendance - HRIS",
+  "short_name": "HRIS",
+  "description": "Attendance - Human Resource Information System",
+  "id": "hris-1.0.0",
+  "start_url": "/?start=app",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "window-controls-overlay",
+    "fullscreen",
+    "minimal-ui"
+  ],
+  "theme_color": "#1d6ee5",
+  "background_color": "#ffffff",
+  "orientation": "portrait",
+  "dir": "auto",
+  "lang": "id",
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  },
+  "categories": [
+    "human-resources",
+    "attendance",
+    "system",
+    "location",
+    "leave",
+    "camera"
+  ],
+  "icons": [
+    {
+      "src": "/img/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/img/icons/icon-512x512.png", 
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/upload/screenshots/pic1.png",
+      "sizes": "272x592",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ],
+  "features": [
+    "fast",
+    "simple",
+    "offline-capable",
+    "secure"
+  ],
+  "permissions": [
+    "notifications",
+    "geolocation",
+    "camera"
+  ]
+}

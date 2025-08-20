@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View; 
 use App\Models\Payroll;
 use Imagick;
+use App\Models\UserFcmToken;
 
 class AccountController extends Controller
 { 
@@ -114,6 +115,23 @@ class AccountController extends Controller
         ]);
 
         return view('accounts.payroll', compact('year', 'payrolls'));
+    }
+
+    public function saveFcmToken(Request $request)
+    {
+        $request->validate([
+            'fcm_token' => 'required|string',
+        ]);
+
+        $user = auth()->user();
+
+        // Simpan jika belum ada
+        $user->fcmTokens()->updateOrCreate(
+            ['fcm_token' => $request->fcm_token],
+            ['device' => $request->header('User-Agent')]
+        );
+
+        return response()->json(['status' => 'success']);
     }
 
 }

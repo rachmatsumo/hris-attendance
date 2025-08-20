@@ -1,18 +1,33 @@
-<!doctype html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<!DOCTYPE html>
+<html lang="id">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <meta name="author" content="{{ config('app.author', 'Abdul Rachmat') }}"> 
-    <meta name="description" content="{{ config('app.description', 'Human Resources Information System') }}">
-    <meta name="keywords" content="HRIS, absensi, attendance, izin, employee, karyawan, management">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ config('app.name') }}</title>
     
-    <link rel="icon" type="image/png" href="{{ asset('logo.png') }}"> 
-    <link rel="apple-touch-icon" href="{{ asset('logo.png') }}">
-
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#2196F3">
+    <meta name="description" content="Deskripsi aplikasi Laravel PWA">
+    
+    <!-- Manifest Link -->
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    
+    <!-- Apple Touch Icons (untuk iOS) -->
+    <link rel="apple-touch-icon" href="{{ asset('img/icons/logo.png') }}">
+    <link rel="apple-touch-icon" sizes="152x152" href="{{ asset('img/icons/logo.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('img/icons/logo.png') }}">
+    
+    <!-- Apple Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="{{ config('app.name') }}">
+    
+    <!-- Microsoft Tiles -->
+    <meta name="msapplication-TileImage" content="{{ asset('img/icons/icon-152x152.png') }}">
+    <meta name="msapplication-TileColor" content="#1d6ee5">
+    
     <!-- CSRF Token -->
-    <meta name="csrf-token" content="{{ csrf_token() }}"> 
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>{{ setting('company_name') }} - Human Resource Information System</title>
 
@@ -21,11 +36,11 @@
     <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
 
     <!-- Scripts -->
-    @vite(['resources/sass/app.scss', 'resources/js/app.js']) 
+    @vite(['resources/sass/app.scss', 'resources/js/app.js'])
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js" integrity="sha256-kmHvs0B+OpCW5GVHUNjv9rOmY0IvSIRcf7zGUDTDQM8=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
@@ -37,29 +52,19 @@
     <!-- SweetAlert2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 
+   
 </head>
 <body>
-     <div id="loader-overlay">
-        <div class="spinner mb-2"></div> 
-        {{ config('app.description', 'Human Resources Information System') }}
-        <span>by {{ config('app.author', 'Abdul Rachmat') }}</span>
-    </div>
-    
+    <!-- Konten aplikasi Laravel -->
     <div id="app">
         <nav class="navbar navbar-top navbar-expand-md navbar-light bg-gradient-blue border-none">
             <div class="container-fluid px-4 flex-column align-items-start">
                 <a class="navbar-brand text-white fs-6 mb-2 d-flex justify-content-between w-100" href="{{ url('/') }}">
                    {{ setting('company_name') }} - {{ config('app.name', 'Laravel') }}
-                   <div class="d-none">
-                        <button type="button" class="btn btn-transparent rounded-5" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-bell"></i>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><button class="dropdown-item" type="button">Action</button></li>
-                            <li><button class="dropdown-item" type="button">Another action</button></li>
-                            <li><button class="dropdown-item" type="button">Something else here</button></li>
-                        </ul>
-                    </div>
+                   <!-- Install PWA Button in Navbar -->
+                   <button id="install-btn-nav" style="display: none;" class="btn btn-sm btn-light rounded-pill">
+                       <i class="bi bi-download"></i> Install
+                   </button>
                 </a>
 
                 <div class="d-flex justify-content-between py-2 w-100">
@@ -95,21 +100,7 @@
                 
                 @if(Auth::user()?->role=='admin' || Auth::user()?->role=='hr') 
                     <a href="{{ route('admin.index') }}" 
-                    class="nav-link {{ request()->routeIs('admin.*') || 
-                                        request()->routeIs('work-schedule.*') ||
-                                        request()->routeIs('location.*') ||
-                                        request()->routeIs('department.*') ||
-                                        request()->routeIs('user.*') ||
-                                        request()->routeIs('position.*') ||
-                                        request()->routeIs('holiday.*') ||
-                                        request()->routeIs('working-time.*') ||
-                                        request()->routeIs('setting.*') ||
-                                        request()->routeIs('level.*') ||
-                                        request()->routeIs('payroll-admin.*') ||
-                                        request()->routeIs('recap-attendance.*') ||
-                                        request()->routeIs('attendance-permit-admin.*')
-                                        
-                                        ? 'active' : '' }}">
+                    class="nav-link {{ request()->routeIs('admin.*') ? 'active' : '' }}">
                         <i class="bi bi-device-hdd"></i>
                         <span>Admin</span>
                     </a>
@@ -125,99 +116,268 @@
 
         <main>
             <div class="container-fluid">
-                {{-- Flash Message Success --}}
-                @if (session('status'))
-                    <div class="alert alert-success alert-dismissible fade show flash-message" role="alert">
-                        {{ session('status') }}
-                        {{-- <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button> --}}
-                    </div>
-                @endif
-                @if (session('success'))
-                    <div class="alert alert-success alert-dismissible fade show flash-message" role="alert">
-                        {{ session('success') }}
-                        {{-- <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button> --}}
-                    </div>
-                @endif
-                @if (session('error'))
-                    <div class="alert alert-danger alert-dismissible fade show flash-message" role="alert">
-                        {{ session('error') }}
-                        {{-- <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button> --}}
-                    </div>
-                @endif
-
-                @if ($errors->any())
-                    <div class="alert alert-danger flash-message">
-                        <ul>
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
-
                 @yield('content')
             </div>
         </main>
+
+        <!-- Footer -->
+        <footer class="footer bg-light border-top mt-5 py-4">
+            <div class="container-fluid px-4">
+                <div class="row align-items-center">
+                    <div class="col-12 col-md-6 text-center text-md-start mb-3 mb-md-0">
+                        <h6 class="mb-2">{{ setting('company_name') }} - HRIS</h6>
+                        <small class="text-muted">
+                            Human Resources Information System<br>
+                            by {{ config('app.author', 'Abdul Rachmat') }}
+                        </small>
+                    </div>
+                    <div class="col-12 col-md-6 text-center text-md-end">
+                        <!-- Install PWA Button in Footer -->
+                        <button id="install-btn-footer" style="display: none;" class="btn btn-primary mb-2 w-100 w-md-auto">
+                            <i class="bi bi-download"></i> Install Aplikasi
+                        </button>
+                        <div class="small text-muted">
+                            <div>&copy; {{ date('Y') }} All Rights Reserved</div>
+                            <div>Version 1.0.0</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- PWA Install Prompt Card (lebih prominent) -->
+                <div id="pwa-install-card" class="card border-primary mt-3" style="display: none;">
+                    <div class="card-body text-center py-3">
+                        <div class="d-flex align-items-center justify-content-center mb-2">
+                            <i class="bi bi-phone text-primary me-2 fs-4"></i>
+                            <h6 class="mb-0">Install Aplikasi HRIS</h6>
+                        </div>
+                        <p class="small text-muted mb-3">
+                            Install aplikasi ini di perangkat Anda untuk akses lebih cepat dan pengalaman yang lebih baik
+                        </p>
+                        <div class="d-flex gap-2 justify-content-center">
+                            <button id="install-btn-card" class="btn btn-primary btn-sm">
+                                <i class="bi bi-download"></i> Install Sekarang
+                            </button>
+                            <button id="dismiss-install-card" class="btn btn-outline-secondary btn-sm">
+                                Nanti Saja
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </footer>
     </div>
-
+ 
+    
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-messaging-compat.js"></script> 
+    
+    <!-- Service Worker Registration -->
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const path = window.location.pathname; 
-            const loader = document.getElementById("loader-overlay");
+        firebase.initializeApp({
+            apiKey: "AIzaSyBvzVzw7BVJvqJKQsOSjKEU4n0S7ZQOPIw",
+            authDomain: "busogi-ee864.firebaseapp.com",
+            projectId: "busogi-ee864",
+            storageBucket: "busogi-ee864.firebasestorage.app",
+            messagingSenderId: "558198634073",
+            appId: "1:558198634073:web:41835adbd3bc59bc522348"
+        }); 
 
-            if (path === "/" || path === "/dashboard" || path === "/home") {
-                setTimeout(function () {
-                    loader.style.display = "none";
-                    if (loader) {
-                        loader.style.display = "none";
+        const messaging = firebase.messaging(); 
+        Notification.requestPermission().then((permission) => {
+            if (permission === 'granted') {
+                // console.log('Notification permission granted.'); 
+                messaging.getToken({ vapidKey: 'BHVE9HSjZe000Axq3nLWvosBis_ztbSe-SQoFajMAczdbqm92Q1uKJXfHf-ctoriZhGD1ZHVRJvrTIy5_PXfcLE'}).then((currentToken) => {
+                    if (currentToken) {
+                        // console.log('Token retrieved:', currentToken);
+                        saveToken(currentToken);  
+                    } else {
+                        // console.log('No registration token available.');
                     }
-                }, 1000);  
-            }else{
-                loader.style.display = "none";
+                }).catch((err) => {
+                    // console.log('An error occurred while retrieving token.', err);
+                });
+            } else {
+                // console.log('Unable to get permission to notify.');
+            }
+        }); 
+
+        messaging.onMessage((payload) => {
+            // console.log('[Firebase] Received foreground message ', payload);
+
+            const notificationTitle = payload.notification.title;
+            const notificationBody = payload.notification.body; 
+            
+            const notificationURL = payload.data && payload.data.url ? payload.data.url : null;
+            const clickAction = payload.data && payload.data.click_action ? payload.data.click_action : null;
+
+            const notificationOptions = {
+                title: notificationTitle,
+                body: notificationBody,
+                badge : "{{ asset('img/icons/icon-144x144.png') }}",  
+                data: {
+                    url: notificationURL,
+                    click_action: clickAction
+                }
+            };
+
+            if (Notification.permission === 'granted') { 
+                new Notification(notificationTitle, notificationOptions);
             }
         });
-    </script>
+         
+        function saveToken(token){ 
+            console.log(token);
+            $.ajax({
+                url: "{{ route('account.save-fcm-token') }}",
+                method: "POST",
+                dataType: "json",
+                data: {
+                    fcm_token : token,
+                    _token : "{{ csrf_token() }}"
+                },
+                    success: function(data) {  
+                        console.log(data); 
+                },  
+            })
+        } 
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('{{ asset("firebase-messaging-sw.js") }}')
+                    .then((registration) => {
+                        // console.log('SW registered: ', registration);
+                    })
+                    .catch((registrationError) => {
+                        // console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const flash = document.querySelector(".flash-message");
-            if (flash) {
+        // Install Prompt Handler
+        let deferredPrompt;
+        const installBtnNav = document.getElementById('install-btn-nav');
+        const installBtnFooter = document.getElementById('install-btn-footer');
+        const installBtnCard = document.getElementById('install-btn-card');
+        const pwaInstallCard = document.getElementById('pwa-install-card');
+        const dismissInstallCard = document.getElementById('dismiss-install-card');
+
+        // Check if already installed
+        function checkIfInstalled() {
+            // Check if running in standalone mode (installed PWA)
+            if (window.matchMedia('(display-mode: standalone)').matches || 
+                window.navigator.standalone === true) {
+                return true;
+            }
+            // Check if installed via browser API
+            if ('getInstalledRelatedApps' in navigator) {
+                navigator.getInstalledRelatedApps().then(apps => {
+                    if (apps.length > 0) {
+                        return true;
+                    }
+                });
+            }
+            return false;
+        }
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Don't show if already installed
+            if (checkIfInstalled()) {
+                return;
+            }
+
+            // Show install buttons
+            installBtnNav.style.display = 'inline-block';
+            installBtnFooter.style.display = 'inline-block';
+            
+            // Show install card with delay on homepage
+            if (window.location.pathname === '/' || window.location.pathname === '/dashboard') {
                 setTimeout(() => {
-                    flash.style.transition = "opacity 0.5s ease";
-                    flash.style.opacity = "0";
-                    setTimeout(() => flash.remove(), 500);
-                }, 2000);
+                    if (!localStorage.getItem('pwa-install-dismissed')) {
+                        pwaInstallCard.style.display = 'block';
+                    }
+                }, 3000); // Show after 3 seconds
             }
         });
-    </script> 
 
-    <script>
-        $(document).on('click', '.openModalInputBtn', function(e) {
-            var form   = document.getElementById('inputForm');
-            var id     = $(this).attr('data-id');
-            var url    = $(this).attr('data-url');
-            var method = $(this).attr('method'); // hati2, jangan pakai attr('method') krn bisa bentrok dgn form
-            var title  = $(this).attr('title');
+        // Handle install button clicks
+        async function handleInstall() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`User response: ${outcome}`);
+                
+                if (outcome === 'accepted') {
+                    // Hide all install prompts
+                    hideInstallPrompts();
+                    
+                    // Show success message
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            title: 'Berhasil!',
+                            text: 'Aplikasi HRIS berhasil diinstall',
+                            icon: 'success',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    }
+                }
+                
+                deferredPrompt = null;
+            }
+        }
 
-            console.log(url, method, title);
+        function hideInstallPrompts() {
+            installBtnNav.style.display = 'none';
+            installBtnFooter.style.display = 'none';
+            pwaInstallCard.style.display = 'none';
+        }
 
-            $('#modalInput .modal-title').text(title);
+        // Add click listeners
+        if (installBtnNav) installBtnNav.addEventListener('click', handleInstall);
+        if (installBtnFooter) installBtnFooter.addEventListener('click', handleInstall);
+        if (installBtnCard) installBtnCard.addEventListener('click', handleInstall);
 
-            // reset form field setiap kali buka modal
-            form.reset();
+        // Dismiss install card
+        if (dismissInstallCard) {
+            dismissInstallCard.addEventListener('click', () => {
+                pwaInstallCard.style.display = 'none';
+                localStorage.setItem('pwa-install-dismissed', 'true');
+            });
+        }
 
-            // set action ulang
-            $('#inputForm').attr('action', url);
-
-            // atur methodField
-            if (method === 'post') {
-                $('#methodField').html('');
-            } else if (method === 'put') {
-                $('#methodField').html('@method("PUT")');
-            } else if (method === 'patch') {
-                $('#methodField').html('@method("PATCH")');
+        window.addEventListener('appinstalled', (evt) => {
+            console.log('App was installed');
+            hideInstallPrompts();
+            
+            // Show success notification
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Aplikasi Terinstall!',
+                    text: 'Aplikasi HRIS berhasil diinstall di perangkat Anda',
+                    icon: 'success',
+                    timer: 3000,
+                    showConfirmButton: false
+                });
             }
         });
+
+        // Analytics - Detect PWA launch
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('source') === 'pwa') {
+            console.log('App launched from PWA');
+            // Laravel analytics tracking
+            @if(config('app.env') === 'production')
+            // Kirim ke Google Analytics atau analytics lainnya
+            @endif
+        }
+
+        // Hide install prompts if already installed
+        if (checkIfInstalled()) {
+            hideInstallPrompts();
+        }
     </script>
 </body>
 </html>
