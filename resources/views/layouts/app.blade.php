@@ -202,28 +202,37 @@
         }); 
 
         messaging.onMessage((payload) => {
-            // console.log('[Firebase] Received foreground message ', payload);
+            console.log('[Firebase] Foreground message ', payload);
 
-            const notificationTitle = payload.notification.title;
-            const notificationBody = payload.notification.body; 
-            
-            const notificationURL = payload.data && payload.data.url ? payload.data.url : null;
-            const clickAction = payload.data && payload.data.click_action ? payload.data.click_action : null;
+            const title = payload.notification.title;
+            const body  = payload.notification.body;
+            const image = payload.notification.image; // opsional
 
-            const notificationOptions = {
-                title: notificationTitle,
-                body: notificationBody,
-                badge : "{{ asset('img/icons/icon-144x144.png') }}",  
-                data: {
-                    url: notificationURL,
-                    click_action: clickAction
-                }
-            };
-
-            if (Notification.permission === 'granted') { 
-                new Notification(notificationTitle, notificationOptions);
+            if (image) {
+                // kalau ada gambar
+                Swal.fire({
+                    title: title,
+                    text: body,
+                    imageUrl: image,
+                    imageWidth: 100,
+                    imageHeight: 100,
+                    timer: 5000,
+                    showConfirmButton: false
+                });
+            } else {
+                // kalau tidak ada gambar
+                Swal.fire({
+                    title: title,
+                    text: body,
+                    icon: 'info',
+                    timer: 5000,
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false
+                });
             }
         });
+
          
         function saveToken(token){ 
             console.log(token);
