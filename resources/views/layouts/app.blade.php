@@ -255,8 +255,8 @@
 
         // Install Prompt Handler
         let deferredPrompt;
-        const installBtnNav = document.getElementById('install-btn-nav');
-        const installBtnFooter = document.getElementById('install-btn-footer');
+        // const installBtnNav = document.getElementById('install-btn-nav');
+        // const installBtnFooter = document.getElementById('install-btn-footer');
         const installBtnCard = document.getElementById('install-btn-card');
         const pwaInstallCard = document.getElementById('pwa-install-card');
         const dismissInstallCard = document.getElementById('dismiss-install-card');
@@ -289,8 +289,8 @@
             }
 
             // Show install buttons
-            installBtnNav.style.display = 'inline-block';
-            installBtnFooter.style.display = 'inline-block';
+            // installBtnNav.style.display = 'inline-block';
+            // installBtnFooter.style.display = 'inline-block';
             
             // Show install card with delay on homepage
             if (window.location.pathname === '/' || window.location.pathname === '/dashboard') {
@@ -330,14 +330,14 @@
         }
 
         function hideInstallPrompts() {
-            installBtnNav.style.display = 'none';
-            installBtnFooter.style.display = 'none';
+            // installBtnNav.style.display = 'none';
+            // installBtnFooter.style.display = 'none';
             pwaInstallCard.style.display = 'none';
         }
 
         // Add click listeners
-        if (installBtnNav) installBtnNav.addEventListener('click', handleInstall);
-        if (installBtnFooter) installBtnFooter.addEventListener('click', handleInstall);
+        // if (installBtnNav) installBtnNav.addEventListener('click', handleInstall);
+        // if (installBtnFooter) installBtnFooter.addEventListener('click', handleInstall);
         if (installBtnCard) installBtnCard.addEventListener('click', handleInstall);
 
         // Dismiss install card
