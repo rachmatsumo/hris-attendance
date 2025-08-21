@@ -65,9 +65,9 @@
                 <a class="navbar-brand text-white fs-6 mb-2 d-flex justify-content-between w-100" href="{{ url('/') }}">
                    {{ setting('company_name') }} - {{ config('app.name', 'Laravel') }}
                    <!-- Install PWA Button in Navbar -->
-                   {{-- <button id="install-btn-nav" style="display: none;" class="btn btn-sm btn-light rounded-pill">
+                   <button type="button" id="install-btn-nav" style="display: none;" class="btn btn-sm btn-light rounded-pill">
                        <i class="bi bi-download"></i> Install
-                   </button> --}}
+                   </button>
                 </a>
 
                 <div class="d-flex justify-content-between py-2 w-100">
@@ -126,7 +126,29 @@
         <!-- Footer -->
         <footer class="footer bg-light border-top mt-5 py-4">
             <div class="container-fluid px-4">
+
+                
                 <div class="row align-items-center">
+                    <!-- PWA Install Prompt Card (lebih prominent) -->
+                    <div id="pwa-install-card" class="col-12 col-md-12 col-lg-12 card border-primary mb-3" style="display: none;">
+                        <div class="card-body text-center py-3">
+                            <div class="d-flex align-items-center justify-content-center mb-2">
+                                <i class="bi bi-phone text-primary me-2 fs-4"></i>
+                                <h6 class="mb-0">Install Aplikasi HRIS</h6>
+                            </div>
+                            <p class="small text-muted mb-3">
+                                Install aplikasi ini di perangkat Anda untuk akses lebih cepat dan pengalaman yang lebih baik
+                            </p>
+                            <div class="d-flex gap-2 justify-content-center">
+                                <button id="install-btn-card" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-download"></i> Install Sekarang
+                                </button>
+                                <button id="dismiss-install-card" class="btn btn-outline-secondary btn-sm">
+                                    Nanti Saja
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     <div class="col-12 col-md-6 text-center text-md-start mb-3 mb-md-0">
                         <h6 class="mb-2">{{ setting('company_name') }} - HRIS</h6>
                         <small class="text-muted">
@@ -146,26 +168,6 @@
                     </div>
                 </div>
                 
-                <!-- PWA Install Prompt Card (lebih prominent) -->
-                <div id="pwa-install-card" class="card border-primary mt-3" style="display: none;">
-                    <div class="card-body text-center py-3">
-                        <div class="d-flex align-items-center justify-content-center mb-2">
-                            <i class="bi bi-phone text-primary me-2 fs-4"></i>
-                            <h6 class="mb-0">Install Aplikasi HRIS</h6>
-                        </div>
-                        <p class="small text-muted mb-3">
-                            Install aplikasi ini di perangkat Anda untuk akses lebih cepat dan pengalaman yang lebih baik
-                        </p>
-                        <div class="d-flex gap-2 justify-content-center">
-                            <button id="install-btn-card" class="btn btn-primary btn-sm">
-                                <i class="bi bi-download"></i> Install Sekarang
-                            </button>
-                            <button id="dismiss-install-card" class="btn btn-outline-secondary btn-sm">
-                                Nanti Saja
-                            </button>
-                        </div>
-                    </div>
-                </div>
             </div>
         </footer>
     </div>
@@ -323,6 +325,7 @@
 
         // Install Prompt Handler
         let deferredPrompt; 
+        const installBtnNav = document.getElementById('install-btn-nav');
         const installBtnCard = document.getElementById('install-btn-card');
         const pwaInstallCard = document.getElementById('pwa-install-card');
         const dismissInstallCard = document.getElementById('dismiss-install-card');
@@ -350,12 +353,14 @@
                 return;
             }
  
+            installBtnNav.style.display = 'inline-block';
+
             if (window.location.pathname === '/' || window.location.pathname === '/dashboard') {
                 setTimeout(() => {
                     if (!localStorage.getItem('pwa-install-dismissed')) {
                         pwaInstallCard.style.display = 'block';
                     }
-                }, 3000);  
+                }, 1000);  
             }
         });
  
@@ -385,12 +390,15 @@
 
         function hideInstallPrompts() { 
             pwaInstallCard.style.display = 'none';
+            installBtnNav.style.display = 'none';
         }
  
         if (installBtnCard) installBtnCard.addEventListener('click', handleInstall);
+        if (installBtnNav) installBtnNav.addEventListener('click', handleInstall);
  
         if (dismissInstallCard) {
             dismissInstallCard.addEventListener('click', () => {
+                // installBtnNav.style.display = 'none';
                 pwaInstallCard.style.display = 'none';
                 localStorage.setItem('pwa-install-dismissed', 'true');
             });
