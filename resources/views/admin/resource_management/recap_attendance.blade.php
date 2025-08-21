@@ -60,7 +60,7 @@
                                 <tr>
                                     <td class="v-middle">{{ $no++ }}</td>
                                     <td class="v-middle">{{ date('Y-m-d', strtotime($a->work_date)) }}</td>
-                                    <td class="v-middle">{{ $a->user->id }}</td>
+                                    <td class="v-middle">{{ $a->user->employee_id }}</td>
                                     <td class="v-middle">{{ $a->user->name }}</td>
                                     <td class="v-middle">{{ $a?->workingTime?->schedule }}</td>
                                     <td class="v-middle">{{ $a->attendance?->clock_in_time ?? '-' }} 
