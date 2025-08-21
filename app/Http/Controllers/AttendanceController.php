@@ -325,6 +325,7 @@ class AttendanceController extends Controller
             return redirect()->back()->with('error', 'Anda berada di luar radius lokasi yang diperbolehkan');
         }
 
+        $image_attendance = NULL;
         // ====================
         // CLOCK IN
         // ====================
@@ -381,7 +382,6 @@ class AttendanceController extends Controller
         }
 
         $attendance->save();
-
 
         $notifData = [
             'type' => ucfirst(str_replace('_',' ', $request->input('type'))),
