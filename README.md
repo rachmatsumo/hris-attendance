@@ -4,7 +4,7 @@
 
 <h2>🚀 Instalasi</h2>
 <ol>
-    <li>Clone repository: <code>git clone https://github.com/rachmatsumo/attendance-system.git hris</code></li>
+    <li>Clone repository: <code>git clone https://github.com/rachmatsumo/hris-attendance.git hris</code></li>
     <li>Buka directory: <code>cd hris</code></li>
     <li>Salin file <code>.env.example</code> menjadi <code>.env</code></li>
     <li>Set konfigurasi environment di file <code>.env</code></li>
