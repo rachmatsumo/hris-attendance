@@ -9,6 +9,9 @@
     <meta name="theme-color" content="#2196F3">
     <meta name="description" content="Deskripsi aplikasi Laravel PWA">
     
+    <link rel="icon" type="image/png" href="{{ asset('img/icons/icon-144x144.png') }}">
+    <link rel="shortcut icon" href="{{ asset('img/icons/favicon.ico') }}">
+
     <!-- Manifest Link -->
     <link rel="manifest" href="{{ asset('manifest.json') }}">
     
