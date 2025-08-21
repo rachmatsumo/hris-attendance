@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Attendance;
 use App\Models\Location;
+use App\Models\User;
 use App\Models\WorkSchedule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use App\Http\Controllers\NotificationController;
 
 class AttendanceController extends Controller
 {
@@ -348,6 +350,8 @@ class AttendanceController extends Controller
                 $attendance->status = 'present';
                 $attendance->late_minutes = 0;
             }
+
+            $image_attendance = $attendance->clock_in_photo;
         }
 
         // ====================
@@ -372,9 +376,23 @@ class AttendanceController extends Controller
                 $clockOut = Carbon::parse($attendance->clock_out_time);
                 $attendance->working_hours = round($clockOut->floatDiffInHours($clockIn), 2);
             }
+
+            $image_attendance = $attendance->clock_in_photo;
         }
 
         $attendance->save();
+
+
+        $notifData = [
+            'type' => ucfirst(str_replace('_',' ', $request->input('type'))),
+            'status'  => ucwords($attendance->status),
+            'image'  => $image_attendance ?? null,
+            'avatar' => Auth::user()?->profile_photo 
+                        ? asset('upload/avatar/thumbnails/' . Auth::user()->profile_photo) 
+                        : asset('upload/avatar/thumbnails/default.png'),
+            'user' => Auth::user(),
+        ];
+        self::notifAdmin($notifData);
 
         return redirect()->route('attendances.index')
             ->with('success', ucfirst(str_replace('_', ' ', $type)) . ' recorded');
@@ -393,6 +411,28 @@ class AttendanceController extends Controller
         file_put_contents(public_path("$folder/$fileName"), base64_decode($photo));
 
         return "$folder/$fileName";
+    }
+
+    public function notifAdmin($data){
+
+        $admins = User::where('role', 'hr')
+                 ->orWhere('role', 'admin')
+                 ->get();
+
+        $user = $data['user']?->name;
+
+        foreach ($admins as $admin) {
+            $payload = [
+                'user_id' => $admin->id,
+                'title'   => ($data['user']?->name ?? 'User'),
+                'body'    => ($data['user']?->name ?? 'User') . " berhasil melakukan " . strtolower($data['type']) . " status " . strtolower($data['status']),
+                'image'   => $data['image'] ?? null,
+                'avatar'  => $data['avatar'] ?? null,
+            ];
+
+            $request = new Request($payload);
+            NotificationController::sendToUser($request);
+        }
     }
 
     // Hitung jarak km

@@ -39,25 +39,7 @@ firebase.initializeApp({
     appId: "1:558198634073:web:41835adbd3bc59bc522348"
 });
 
-const messaging = firebase.messaging();
-
-// messaging.onBackgroundMessage(function(payload) {
-//   const notificationTitle = payload.notification.title;
-//   const notificationBody  = payload.notification.body;
-//   const notificationImage = payload.notification.image || null;
-
-//   const notificationOptions = {
-//     body: notificationBody,
-//     icon: "img/icons/icon-144x144.png",
-//     badge: "img/icons/icon-144x144.png",
-//     image: notificationImage, // kalau ada gambar akan ditampilkan
-//     data: {
-//       url: payload.data && payload.data.url ? payload.data.url : '/',
-//     }
-//   };
-
-//   self.registration.showNotification(notificationTitle, notificationOptions);
-// });
+const messaging = firebase.messaging(); 
 
 messaging.onBackgroundMessage(function(payload) {
   console.log("[SW] Message received: ", payload);
@@ -65,22 +47,22 @@ messaging.onBackgroundMessage(function(payload) {
   const title = payload.data.title || "HRIS";
   const options = {
     body: payload.data.body || "",
-    icon: "img/icons/icon-144x144.png",
-    badge: "img/icons/icon-144x144.png",
+    icon: payload.data.icon || "img/icons/icon-144x144.png",
+    badge: "img/icons/icon-72x72.png",
     image: payload.data.image || null,
-    data: { url: payload.data.url || "/" }
+    // data: { url: payload.notification.url || "/" }
   };
 
   self.registration.showNotification(title, options);
 });
 
 
-self.addEventListener('notificationclick', function(event) {
-  event.notification.close();
+// self.addEventListener('notificationclick', function(event) {
+//   event.notification.close();
  
-  const urlToOpen = event.notification.data && event.notification.data.url ? event.notification.data.url : '/';
+//   const urlToOpen = event.notification.data && event.notification.data.url ? event.notification.data.url : '/';
 
-  event.waitUntil(
-      clients.openWindow(urlToOpen)
-  );
-});
+//   event.waitUntil(
+//       clients.openWindow(urlToOpen)
+//   );
+// });

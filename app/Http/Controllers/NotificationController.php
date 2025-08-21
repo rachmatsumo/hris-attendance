@@ -35,6 +35,10 @@ class NotificationController extends Controller
                             <input type="text" name="image" value="'.asset('upload/avatar/default.png').'" class="form-control">
                         </div>
                         <div class="mb-3">
+                            <label>Avatar</label>
+                            <input type="text" name="avatar" value="'.asset('upload/avatar/thumbnails/default.png').'" class="form-control">
+                        </div>
+                        <div class="mb-3">
                             <label>Body</label>
                             <textarea name="body" class="form-control" required>Ini adalah body uji coba notifikasi</textarea>
                         </div>
@@ -46,51 +50,37 @@ class NotificationController extends Controller
         ');
     }
 
-
-    public function sendToUser(Request $request)
+    public static function sendToUser(Request $request)
     {
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'title'   => 'required|string',
             'body'    => 'required|string',
             'image'   => 'nullable|url', // opsional
+            'avatar'   => 'nullable|url', // opsional
         ]);
 
-        // dd($request->image);
-
         $user = User::with('fcmTokens')->findOrFail($request->user_id);
-        $tokens = $user->fcmTokens()->pluck('fcm_token')->toArray();
+        $tokens = $user->fcmTokens()->pluck('fcm_token')->toArray(); 
 
         if (count($tokens) === 0) {
             return response()->json(['message' => 'User has no FCM tokens'], 404);
         }
-
-        // Inisialisasi Firebase
+ 
         $factory = (new Factory)
             ->withServiceAccount(storage_path('app/private/busogi-ee864-40d3e6e45a91.json'));
 
         $messaging = $factory->createMessaging();
 
         $message = [
-            'notification' => [
+            'data' => [
                 'title' => $request->title,
                 'body'  => $request->body,
-                // opsional gambar
-                'image' => $request->image ?? null, 
+                'icon'  => $request->avatar ?? null,
+                'image' => $request->image ?? null,
             ],
-            'data' => [
-                'url' => $request->url ?? '/',
-            ],
-        ];
-
-
-        // kalau ada image, tambahkan
-       if ($request->filled('image')) {
-            $message['notification']['image'] = $request->image;
-            $message['data']['image'] = $request->image; // supaya bisa di-handle di SW juga
-        }
-
-        // Kirim ke banyak token
+        ]; 
+ 
         $sendReport = $messaging->sendMulticast($message, $tokens);
 
         return response()->json([

@@ -13,9 +13,9 @@
     <link rel="manifest" href="{{ asset('manifest.json') }}">
     
     <!-- Apple Touch Icons (untuk iOS) -->
-    <link rel="apple-touch-icon" href="{{ asset('img/icons/logo.png') }}">
-    <link rel="apple-touch-icon" sizes="152x152" href="{{ asset('img/icons/logo.png') }}">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('img/icons/logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('img/icons/icon-512x512.png') }}">
+    <link rel="apple-touch-icon" sizes="152x152" href="{{ asset('img/icons/icon-152x152.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('img/icons/icon-180x180.png') }}">
     
     <!-- Apple Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -183,33 +183,67 @@
         }); 
 
         const messaging = firebase.messaging(); 
+        const myVapidKey = 'BHVE9HSjZe000Axq3nLWvosBis_ztbSe-SQoFajMAczdbqm92Q1uKJXfHf-ctoriZhGD1ZHVRJvrTIy5_PXfcLE';
         Notification.requestPermission().then((permission) => {
-            if (permission === 'granted') {
-                // console.log('Notification permission granted.'); 
-                messaging.getToken({ vapidKey: 'BHVE9HSjZe000Axq3nLWvosBis_ztbSe-SQoFajMAczdbqm92Q1uKJXfHf-ctoriZhGD1ZHVRJvrTIy5_PXfcLE'}).then((currentToken) => {
-                    if (currentToken) {
-                        // console.log('Token retrieved:', currentToken);
-                        saveToken(currentToken);  
+            if(permission === 'granted') {
+                getFcmToken();
+            }else if (Notification.permission === "default") { 
+                Notification.requestPermission().then((permission) => {
+                    if (permission === "granted") { 
+                        getFcmToken();
                     } else {
-                        // console.log('No registration token available.');
+                        alert("Anda menolak notifikasi");
                     }
-                }).catch((err) => {
-                    // console.log('An error occurred while retrieving token.', err);
                 });
-            } else {
+            }else {
                 // console.log('Unable to get permission to notify.');
             }
         }); 
 
+        const notifSwitch = document.getElementById("notifSwitch");
+ 
+        if (notifSwitch) {
+            if (Notification.permission === "granted") {
+                notifSwitch.checked = true;
+            } else {
+                notifSwitch.checked = false;
+            }
+            notifSwitch.addEventListener("change", function () {
+                 if (this.checked) { 
+                     if (Notification.permission === "default") { 
+                         Notification.requestPermission().then((permission) => {
+                            if (permission === "granted") {
+                                getFcmToken();
+                                alert("Izin notifikasi diaktifkan");
+                            } else {
+                                removeFcmToken();
+                                alert("Anda menolak izin notifikasi");
+                                notifSwitch.checked = false;
+                            }
+                         });
+                     } else if (Notification.permission === "granted") {
+                        getFcmToken();
+                        alert("Notifikasi sudah aktif");
+                     } else if (Notification.permission === "denied") {
+                        removeFcmToken();
+                        alert("Anda menolak notifikasi. Aktifkan manual di setting browser.");
+                        notifSwitch.checked = false;
+                     }
+                 } else {
+                    removeFcmToken();
+                    alert("Notifikasi dimatikan"); 
+                 }
+             });
+        }
+ 
         messaging.onMessage((payload) => {
             console.log('[Firebase] Foreground message ', payload);
 
-            const title = payload.notification.title;
-            const body  = payload.notification.body;
-            const image = payload.notification.image; // opsional
+            const title = payload.data.title;
+            const body  = payload.data.body;
+            const image = payload.data.image;  
 
-            if (image) {
-                // kalau ada gambar
+            if (image) { 
                 Swal.fire({
                     title: title,
                     text: body,
@@ -219,8 +253,7 @@
                     timer: 5000,
                     showConfirmButton: false
                 });
-            } else {
-                // kalau tidak ada gambar
+            } else { 
                 Swal.fire({
                     title: title,
                     text: body,
@@ -233,7 +266,16 @@
             }
         });
 
-        function saveToken(token){ 
+        function getFcmToken(){
+            messaging.getToken({ vapidKey: myVapidKey })
+            .then((currentToken) => {
+                if (currentToken) {
+                    saveFcmToken(currentToken);   
+                }
+            });
+        }
+
+        function saveFcmToken(token){ 
             console.log(token);
             $.ajax({
                 url: "{{ route('account.save-fcm-token') }}",
@@ -243,15 +285,30 @@
                     fcm_token : token,
                     _token : "{{ csrf_token() }}"
                 },
-                    success: function(data) {  
-                        console.log(data); 
+                success: function(data) {  
+                        // console.log(data); 
                 },  
             })
-        } 
-        // Register Service Worker
+        }  
+
+        function removeFcmToken()
+        {
+            $.ajax({
+                url: "{{ route('account.remove-fcm-token') }}",
+                method: "POST",
+                dataType: "json",
+                data: { 
+                    _token : "{{ csrf_token() }}"
+                },
+                success: function(data) {  
+                        // console.log(data); 
+                },  
+            })
+        }
+
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('{{ asset("firebase-messaging-sw.js") }}')
+                navigator.serviceWorker.register('{{ asset("firebase-messaging-sw.js?ver=1.1") }}')
                     .then((registration) => {
                         // console.log('SW registered: ', registration);
                     })
@@ -262,21 +319,16 @@
         }
 
         // Install Prompt Handler
-        let deferredPrompt;
-        // const installBtnNav = document.getElementById('install-btn-nav');
-        // const installBtnFooter = document.getElementById('install-btn-footer');
+        let deferredPrompt; 
         const installBtnCard = document.getElementById('install-btn-card');
         const pwaInstallCard = document.getElementById('pwa-install-card');
         const dismissInstallCard = document.getElementById('dismiss-install-card');
-
-        // Check if already installed
-        function checkIfInstalled() {
-            // Check if running in standalone mode (installed PWA)
+ 
+        function checkIfInstalled() { 
             if (window.matchMedia('(display-mode: standalone)').matches || 
                 window.navigator.standalone === true) {
                 return true;
-            }
-            // Check if installed via browser API
+            } 
             if ('getInstalledRelatedApps' in navigator) {
                 navigator.getInstalledRelatedApps().then(apps => {
                     if (apps.length > 0) {
@@ -290,38 +342,29 @@
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            
-            // Don't show if already installed
+             
             if (checkIfInstalled()) {
                 return;
             }
-
-            // Show install buttons
-            // installBtnNav.style.display = 'inline-block';
-            // installBtnFooter.style.display = 'inline-block';
-            
-            // Show install card with delay on homepage
+ 
             if (window.location.pathname === '/' || window.location.pathname === '/dashboard') {
                 setTimeout(() => {
                     if (!localStorage.getItem('pwa-install-dismissed')) {
                         pwaInstallCard.style.display = 'block';
                     }
-                }, 3000); // Show after 3 seconds
+                }, 3000);  
             }
         });
-
-        // Handle install button clicks
+ 
         async function handleInstall() {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
                 console.log(`User response: ${outcome}`);
                 
-                if (outcome === 'accepted') {
-                    // Hide all install prompts
+                if (outcome === 'accepted') { 
                     hideInstallPrompts();
-                    
-                    // Show success message
+                     
                     if (typeof Swal !== 'undefined') {
                         Swal.fire({
                             title: 'Berhasil!',
@@ -337,18 +380,12 @@
             }
         }
 
-        function hideInstallPrompts() {
-            // installBtnNav.style.display = 'none';
-            // installBtnFooter.style.display = 'none';
+        function hideInstallPrompts() { 
             pwaInstallCard.style.display = 'none';
         }
-
-        // Add click listeners
-        // if (installBtnNav) installBtnNav.addEventListener('click', handleInstall);
-        // if (installBtnFooter) installBtnFooter.addEventListener('click', handleInstall);
+ 
         if (installBtnCard) installBtnCard.addEventListener('click', handleInstall);
-
-        // Dismiss install card
+ 
         if (dismissInstallCard) {
             dismissInstallCard.addEventListener('click', () => {
                 pwaInstallCard.style.display = 'none';
@@ -359,8 +396,7 @@
         window.addEventListener('appinstalled', (evt) => {
             console.log('App was installed');
             hideInstallPrompts();
-            
-            // Show success notification
+             
             if (typeof Swal !== 'undefined') {
                 Swal.fire({
                     title: 'Aplikasi HRIS sedang dipasang',
@@ -371,18 +407,16 @@
                 });
             }
         });
-
-        // Analytics - Detect PWA launch
+ 
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('source') === 'pwa') {
+        if (urlParams.get('start') === 'app') {
             console.log('App launched from PWA');
             // Laravel analytics tracking
             @if(config('app.env') === 'production')
             // Kirim ke Google Analytics atau analytics lainnya
             @endif
         }
-
-        // Hide install prompts if already installed
+ 
         if (checkIfInstalled()) {
             hideInstallPrompts();
         }

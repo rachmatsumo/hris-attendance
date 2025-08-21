@@ -23,6 +23,14 @@
                     <i class="bi bi-chevron-compact-right"></i>
                 </a>
             </li>
+            <li>
+                <a href="{{ route('account.setting') }}">
+                    <div>
+                        <span class="mb-0"><i class="bi bi-gear mb-0"></i></span> Pengaturan
+                    </div>
+                    <i class="bi bi-chevron-compact-right"></i>
+                </a>
+            </li>
             
             <li class="mt-5">
                 <a href="{{ route('account.change-password') }}">

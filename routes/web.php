@@ -21,7 +21,9 @@ Route::middleware('auth')->group(function () {
     Route::get('account/edit', [AccountController::class, 'edit'])->name('account.edit');
     Route::get('account/change-password', [AccountController::class, 'changePassword'])->name('account.change-password');
     Route::get('account/payroll', [AccountController::class, 'payrollIndex'])->name('account.payroll');
+    Route::get('account/setting', [AccountController::class, 'setting'])->name('account.setting'); 
     Route::post('account/save-fcm-token', [AccountController::class, 'saveFcmToken'])->name('account.save-fcm-token'); 
+    Route::post('account/remove-fcm-token', [AccountController::class, 'removeFcmToken'])->name('account.remove-fcm-token'); 
     Route::resource('account', AccountController::class)->only(['update']);
     
     Route::get('/test-notification', [NotificationController::class, 'index']);

@@ -20,6 +20,11 @@ class AccountController extends Controller
             'user' => $request->user(),
         ]);
     }
+  
+    public function setting(): View
+    {
+        return view('accounts.setting');
+    }
 
     public function edit(Request $request): View
     {
@@ -130,6 +135,15 @@ class AccountController extends Controller
             ['fcm_token' => $request->fcm_token],
             ['device' => $request->header('User-Agent')]
         );
+
+        return response()->json(['status' => 'success']);
+    }
+
+    public function removeFcmToken(Request $request)
+    {
+
+        $user = auth()->user(); 
+        $user->fcmTokens()->delete();
 
         return response()->json(['status' => 'success']);
     }
