@@ -6,7 +6,7 @@
     <title>{{ config('app.name') }}</title>
     
     <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#2196F3">
+    <meta name="theme-color" content="#1d6ee5">
     <meta name="description" content="Deskripsi aplikasi Laravel PWA">
     
     <link rel="icon" type="image/png" href="{{ asset('img/icons/icon-144x144.png') }}">
