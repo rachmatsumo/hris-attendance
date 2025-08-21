@@ -66,26 +66,35 @@ class NotificationController extends Controller
         if (count($tokens) === 0) {
             return response()->json(['message' => 'User has no FCM tokens'], 404);
         }
- 
-        $factory = (new Factory)
-            ->withServiceAccount(storage_path('app/private/busogi-ee864-40d3e6e45a91.json'));
+         
+        $serviceAccount = env('GOOGLE_SERVICE_ACCOUNT_FILE');
 
-        $messaging = $factory->createMessaging();
+        if ($serviceAccount && file_exists(storage_path($serviceAccount))) {
+            $factory   = (new Factory)->withServiceAccount(storage_path($serviceAccount));
+            $messaging = $factory->createMessaging();
 
-        $message = [
-            'data' => [
-                'title' => $request->title,
-                'body'  => $request->body,
-                'icon'  => $request->avatar ?? null,
-                'image' => $request->image ?? null,
-            ],
-        ]; 
- 
-        $sendReport = $messaging->sendMulticast($message, $tokens);
+            $message = [
+                'data' => [
+                    'title' => $request->title,
+                    'body'  => $request->body,
+                    'icon'  => $request->avatar ?? null,
+                    'image' => $request->image ?? null,
+                ],
+            ];
+
+            $sendReport = $messaging->sendMulticast($message, $tokens);
+
+            return response()->json([
+                'success' => $sendReport->successes()->count(),
+                'failure' => $sendReport->failures()->count(),
+            ]);
+        }
 
         return response()->json([
-            'success' => $sendReport->successes()->count(),
-            'failure' => $sendReport->failures()->count(),
-        ]);
+            'success' => 0,
+            'failure' => count($tokens ?? []),
+            'message' => 'Firebase service account file not found',
+        ], 400);
+
     }
 }
