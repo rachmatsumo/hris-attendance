@@ -353,7 +353,7 @@
                 return;
             }
  
-            installBtnNav.style.display = 'inline-block';
+            // installBtnNav.style.display = 'inline-block';
 
             if (window.location.pathname === '/' || window.location.pathname === '/dashboard') {
                 setTimeout(() => {
@@ -390,7 +390,7 @@
 
         function hideInstallPrompts() { 
             pwaInstallCard.style.display = 'none';
-            installBtnNav.style.display = 'none';
+            // installBtnNav.style.display = 'none';
         }
  
         if (installBtnCard) installBtnCard.addEventListener('click', handleInstall);
