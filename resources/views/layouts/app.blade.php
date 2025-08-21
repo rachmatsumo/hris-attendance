@@ -189,6 +189,7 @@
 
         const messaging = firebase.messaging(); 
         const myVapidKey = 'BHVE9HSjZe000Axq3nLWvosBis_ztbSe-SQoFajMAczdbqm92Q1uKJXfHf-ctoriZhGD1ZHVRJvrTIy5_PXfcLE';
+        
         Notification.requestPermission().then((permission) => {
             if(permission === 'granted') {
                 getFcmToken();
@@ -206,41 +207,93 @@
         }); 
 
         const notifSwitch = document.getElementById("notifSwitch");
- 
-        if (notifSwitch) {
-            if (Notification.permission === "granted") {
-                notifSwitch.checked = true;
-            } else {
-                notifSwitch.checked = false;
+
+        // Fungsi untuk mengecek status notifikasi dari localStorage
+        function getNotificationStatus() {
+            return localStorage.getItem('notificationEnabled') === 'true';
+        }
+
+        // Fungsi untuk menyimpan status notifikasi
+        function setNotificationStatus(enabled) {
+            localStorage.setItem('notificationEnabled', enabled.toString());
+            
+            // Sinkronisasi dengan service worker
+            syncWithServiceWorker('SET_NOTIFICATION_STATUS', { enabled });
+        }
+
+        // Fungsi untuk sinkronisasi dengan service worker
+        async function syncWithServiceWorker(type, data = {}) {
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registration = await navigator.serviceWorker.ready;
+                    if (registration && registration.active) {
+                        registration.active.postMessage({
+                            type: type,
+                            ...data
+                        });
+                    }
+                } catch (error) {
+                    console.log('Error syncing with service worker:', error);
+                }
             }
-            notifSwitch.addEventListener("change", function () {
-                 if (this.checked) { 
-                     if (Notification.permission === "default") { 
-                         Notification.requestPermission().then((permission) => {
+        }
+
+        // Fungsi untuk membersihkan semua data notifikasi
+        async function clearAllNotificationData() {
+            removeFcmToken();
+            setNotificationStatus(false);
+            
+            // Minta service worker untuk membersihkan notifikasi yang tampil
+            await syncWithServiceWorker('CLEAR_NOTIFICATIONS');
+        }
+
+        if (notifSwitch) {
+            // Set status switch berdasarkan localStorage
+            notifSwitch.checked = getNotificationStatus();
+            
+            notifSwitch.addEventListener("change", async function () {
+                if (this.checked) {
+                    // User ingin mengaktifkan notifikasi
+                    if (Notification.permission === "default") {
+                        try {
+                            const permission = await Notification.requestPermission();
                             if (permission === "granted") {
                                 getFcmToken();
+                                setNotificationStatus(true);
                                 alert("Izin notifikasi diaktifkan");
                             } else {
-                                removeFcmToken();
+                                await clearAllNotificationData();
                                 alert("Anda menolak izin notifikasi");
-                                notifSwitch.checked = false;
+                                this.checked = false;
                             }
-                         });
-                     } else if (Notification.permission === "granted") {
+                        } catch (error) {
+                            console.log('Error requesting permission:', error);
+                            this.checked = false;
+                        }
+                    } else if (Notification.permission === "granted") {
                         getFcmToken();
-                        alert("Notifikasi sudah aktif");
-                     } else if (Notification.permission === "denied") {
-                        removeFcmToken();
-                        alert("Anda menolak notifikasi. Aktifkan manual di setting browser.");
-                        notifSwitch.checked = false;
-                     }
-                 } else {
-                    removeFcmToken();
-                    alert("Notifikasi dimatikan"); 
-                 }
-             });
+                        setNotificationStatus(true);
+                        alert("Notifikasi diaktifkan");
+                    } else if (Notification.permission === "denied") {
+                        setNotificationStatus(false);
+                        alert("Izin notifikasi ditolak.\n\nUntuk mengaktifkan:\n• Chrome: Klik ikon gembok → Izin situs → Notifikasi → Izinkan\n• Firefox: Klik ikon perisai → Izin → Notifikasi\n\nSetelah itu refresh halaman.");
+                        this.checked = false;
+                    }
+                } else {
+                    // User ingin menonaktifkan notifikasi
+                    await clearAllNotificationData();
+                    alert("Notifikasi berhasil dinonaktifkan");
+                }
+            });
+            
+            // Sinkronisasi status saat halaman dimuat
+            window.addEventListener('load', () => {
+                syncWithServiceWorker('SET_NOTIFICATION_STATUS', { 
+                    enabled: getNotificationStatus() 
+                });
+            });
         }
- 
+
         messaging.onMessage((payload) => {
             console.log('[Firebase] Foreground message ', payload);
 
@@ -313,7 +366,7 @@
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('{{ asset("firebase-messaging-sw.js?ver=1.1") }}')
+                navigator.serviceWorker.register('{{ asset("firebase-messaging-sw.js?ver=1.5") }}')
                     .then((registration) => {
                         // console.log('SW registered: ', registration);
                     })
