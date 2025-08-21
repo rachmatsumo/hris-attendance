@@ -413,7 +413,7 @@
                     title: 'Aplikasi HRIS sedang dipasang',
                     text: 'Tunggu sebentar, instalasi sedang berlangsung. Periksa notifikasi bar anda untuk mengetahui status pemasangan.',
                     icon: 'success',
-                    timer: 3000,
+                    timer: 10000,
                     showConfirmButton: false
                 });
             }
