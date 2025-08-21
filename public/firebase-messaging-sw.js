@@ -82,6 +82,9 @@ self.addEventListener('install', (e) => {
         const cache = await caches.open(cacheName); 
         await cache.addAll(toCache);
     })());
+    
+    // Skip waiting untuk mencegah notifikasi update otomatis
+    self.skipWaiting();
 });
 
 self.addEventListener("activate", evt => self.clients.claim());

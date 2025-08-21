@@ -6,6 +6,7 @@
   "start_url": "/?start=app",
   "scope": "/",
   "display": "standalone",
+  "background_sync": false,
   "display_override": [
     "standalone",
     "window-controls-overlay",
