@@ -386,7 +386,7 @@ class AttendanceController extends Controller
         $notifData = [
             'type' => ucfirst(str_replace('_',' ', $request->input('type'))),
             'status'  => ucwords($attendance->status),
-            'image'  => $image_attendance ?? null,
+            'image' => $image_attendance ? asset($image_attendance) : null,
             'avatar' => Auth::user()?->profile_photo 
                         ? asset('upload/avatar/thumbnails/' . Auth::user()->profile_photo) 
                         : asset('upload/avatar/thumbnails/default.png'),
