@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'Laravel') }} - Login</title>
+    <meta name="theme-color" content="#1d6ee5">
+    <meta name="description" content="Human Resources Information System">
+    
+    <link rel="icon" type="image/png" href="{{ asset('img/icons/icon-144x144.png') }}">
+    <link rel="shortcut icon" href="{{ asset('img/icons/favicon.ico') }}">
 
     <!-- Fonts & Bootstrap -->
     <link rel="dns-prefetch" href="//fonts.bunny.net">

@@ -108,6 +108,30 @@ class Attendance extends Model
         return $this->clock_out_photo ? asset('storage/' . $this->clock_out_photo) : null;
     }
 
+    public function getStatusBadgeAttribute()
+    {
+        $statusClass = [
+            'late'    => 'badge bg-danger',
+            'warning' => 'badge bg-warning text-dark',
+            'present' => 'badge bg-primary',
+            'success' => 'badge bg-success',
+        ];
+
+        return '<span class="'.($statusClass[$this->status] ?? 'badge bg-secondary').'">'
+                .ucfirst($this->status).
+               '</span>';
+    }
+
+    public function getClockInAttribute()
+    {
+        return Carbon::parse($this->clock_int_time)->format('H:i') ?? '-';
+    }
+
+    public function getClockOutAttribute()
+    {
+        return Carbon::parse($this->clock_out_time)->format('H:i') ?? '-';
+    }
+
     // Methods
     public function calculateWorkingHours()
     {
