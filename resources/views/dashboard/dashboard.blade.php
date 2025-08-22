@@ -126,8 +126,8 @@
                                                 : asset('upload/avatar/default.png') }}" 
                                                 alt="Avatar" class="employee-avatar me-3">
                                         <div>
-                                            <div class="fw-semibold">{{ $d->user->name }}</div>
-                                            <small class="text-muted">{{ $d->user?->position?->name }}</small>
+                                            <div class="fw-semibold no-wrap">{{ $d->user->name }}</div>
+                                            <small class="text-muted no-wrap">{{ $d->user?->position?->name }}</small>
                                         </div>
                                     </div>
                                 </td> 
