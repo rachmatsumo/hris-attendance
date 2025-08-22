@@ -124,12 +124,12 @@ class Attendance extends Model
 
     public function getClockInAttribute()
     {
-        return Carbon::parse($this->clock_int_time)->format('H:i') ?? '-';
+        return optional($this->clock_in_time, fn($time) => Carbon::parse($time)->format('H:i')) ?? '-';
     }
 
     public function getClockOutAttribute()
     {
-        return Carbon::parse($this->clock_out_time)->format('H:i') ?? '-';
+        return optional($this->clock_out_time, fn($time) => Carbon::parse($time)->format('H:i')) ?? '-';
     }
 
     // Methods
