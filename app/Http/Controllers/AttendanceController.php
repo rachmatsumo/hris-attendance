@@ -378,7 +378,7 @@ class AttendanceController extends Controller
                 $attendance->working_hours = round($clockOut->floatDiffInHours($clockIn), 2);
             }
 
-            $image_attendance = $attendance->clock_in_photo;
+            $image_attendance = $attendance->clock_out_photo;
         }
 
         $attendance->save();
