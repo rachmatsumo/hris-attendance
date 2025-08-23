@@ -322,6 +322,7 @@ class AttendanceController extends Controller
 
         // Validasi radius jika location_required = 1
         if ($locationRequired === 1 && !$isWithinRadius) {
+            // dd('error');
             return redirect()->back()->with('error', 'Anda berada di luar radius lokasi yang diperbolehkan');
         }
 

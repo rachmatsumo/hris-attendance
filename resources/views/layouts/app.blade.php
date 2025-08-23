@@ -120,9 +120,34 @@
 
         <main>
             <div class="container-fluid">
+                
+                {{-- Flash Messages --}}
+                @foreach (['success', 'error', 'warning', 'info'] as $msg)
+                    @if(session()->has($msg))
+                        <div class="flash-message alert alert-{{ $msg === 'error' ? 'danger' : $msg }} alert-dismissible fade show" role="alert">
+                            {{ session()->get($msg) }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    @endif
+                @endforeach
+
+                {{-- Validation Errors --}}
+                @if ($errors->any())
+                    <div class="flash-message alert alert-danger alert-dismissible fade show" role="alert">
+                        <ul class="mb-0">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
+
+                {{-- Main Content --}}
                 @yield('content')
             </div>
         </main>
+
 
         <!-- Footer -->
         <footer class="footer bg-light border-top mt-5 py-4">

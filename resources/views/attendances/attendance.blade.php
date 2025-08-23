@@ -10,6 +10,13 @@
             <input type="hidden" id="photoData" name="photo" required>
             
             <div class="w-100 border-bottom mb-2">
+                <div class="col-12 d-flex justify-content-between mb-3 border-bottom pb-2">
+                    <div id="timer"
+                        data-time="{{ \Carbon\Carbon::now(setting('app_timezone'))->format('Y-m-d H:i:s') }}"
+                        data-tz="{{ setting('app_timezone') }}">
+                    </div>
+                    <div>{{ setting('app_timezone') }}</div>
+                </div>
                 <div class="col-12 d-flex justify-content-between mb-3">
                     <div><b>Jadwal Kerja</b></div>
                     <div class="text-end">{{ \Carbon\Carbon::parse($activeShift?->work_date)->locale('id')->translatedFormat('D, d M Y') }}</div>
@@ -139,6 +146,29 @@
 </div>
 
 <!-- Scripts -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const timerEl = document.getElementById("timer");
+        let serverTime = new Date(timerEl.dataset.time); // waktu dari server
+        let tz = timerEl.dataset.tz;
+
+        function updateClock() {
+            // Tambah 1 detik tiap kali interval jalan
+            serverTime.setSeconds(serverTime.getSeconds() + 1);
+
+            // Format jam:menit:detik
+            let h = String(serverTime.getHours()).padStart(2, "0");
+            let m = String(serverTime.getMinutes()).padStart(2, "0");
+            let s = String(serverTime.getSeconds()).padStart(2, "0");
+
+            timerEl.textContent = `${h}:${m}:${s}`;
+        }
+
+        updateClock(); // tampilkan pertama kali
+        setInterval(updateClock, 1000); // update tiap detik
+    });
+</script>
+
 <script>
     let selectedType = '';
     let map = null;
