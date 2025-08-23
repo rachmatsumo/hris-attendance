@@ -15,6 +15,13 @@ class AttendanceController extends Controller
 {
     public function index()
     {
+        $openClockIn = (INT) setting('open_clock_in', 120);
+        $closeClockIn = (INT) setting('close_clock_in', 60);
+        
+        $openClockOut = (INT) setting('open_clock_out', 30);
+        $closeClockOut = (INT) setting('close_clock_out', 300);
+        
+
         $attendances = Attendance::with('workSchedule')
                     ->where('user_id', Auth::id())
                     ->orderBy('date', 'desc')
@@ -35,7 +42,7 @@ class AttendanceController extends Controller
             ->get();
 
         // Cari shift yang sedang aktif berdasarkan waktu sekarang
-        $activeShifts = $schedules->filter(function($schedule) use ($now) {
+        $activeShifts = $schedules->filter(function($schedule) use ($now, $openClockIn, $closeClockOut) {
             if (!$schedule->workingTime) return false;
 
             $shiftStart = Carbon::parse($schedule->workingTime->start_time)
@@ -48,8 +55,8 @@ class AttendanceController extends Controller
             }
 
             // Extended window untuk absensi
-            $clockInStart = $shiftStart->copy()->subHours(2);
-            $clockOutEnd = $shiftEnd->copy()->addHours(5);
+            $clockInStart = $shiftStart->copy()->subMinutes($openClockIn);
+            $clockOutEnd = $shiftEnd->copy()->addMinutes($closeClockOut);
 
             return $now->between($clockInStart, $clockOutEnd);
         });
@@ -119,13 +126,13 @@ class AttendanceController extends Controller
             }
 
             $clockInWindow = [
-                'start' => $shiftStart->copy()->subHours(2)->toISOString(),
-                'end' => $shiftStart->copy()->addHours(2)->toISOString(),
+                'start' => $shiftStart->copy()->subMinutes($openClockIn)->toISOString(),
+                'end' => $shiftStart->copy()->addMinutes($closeClockIn)->toISOString(),
             ];
             
             $clockOutWindow = [
-                'start' => $shiftEnd->copy()->subMinutes(30)->toISOString(),
-                'end' => $shiftEnd->copy()->addHours(5)->toISOString(),
+                'start' => $shiftEnd->copy()->subMinutes($openClockOut)->toISOString(),
+                'end' => $shiftEnd->copy()->addMinutes($closeClockOut)->toISOString(),
             ];
         }
 
@@ -162,6 +169,12 @@ class AttendanceController extends Controller
  
     public function store(Request $request)
     {
+        $openClockIn = (INT) setting('open_clock_in', 120);
+        $closeClockIn = (INT) setting('close_clock_in', 60);
+        
+        $openClockOut = (INT) setting('open_clock_out', 30);
+        $closeClockOut = (INT) setting('close_clock_out', 300);
+
         $type = $request->input('type'); // clock_in_time / clock_out_time
         $locationRequired = (int) setting('location_required', 0);
         $photoClockInRequire = (int) setting('photo_required_clock_in', 0);
@@ -203,8 +216,8 @@ class AttendanceController extends Controller
             }
 
             // Extended window untuk absensi
-            $clockInStart = $shiftStart->copy()->subHours(2);
-            $clockOutEnd = $shiftEnd->copy()->addHours(5);
+            $clockInStart = $shiftStart->copy()->subMinutes($openClockIn);
+            $clockOutEnd = $shiftEnd->copy()->addMinutes($closeClockOut);
 
             // Jika waktu sekarang dalam window absensi
             if ($now->between($clockInStart, $clockOutEnd)) {
@@ -331,7 +344,7 @@ class AttendanceController extends Controller
         // CLOCK IN
         // ====================
         if ($type === 'clock_in_time' && !$attendance->clock_in_time) {
-            $earliestClockIn = $shiftStart->copy()->subHours(2); // 2 jam sebelum shift start
+            $earliestClockIn = $shiftStart->copy()->subMinutes($openClockIn);
 
             if ($now->lessThan($earliestClockIn)) {
                 return redirect()->back()->with('error', 'Clock in terlalu awal. Anda hanya bisa clock in maksimal 2 jam sebelum shift.');
@@ -360,7 +373,7 @@ class AttendanceController extends Controller
         // CLOCK OUT
         // ====================
         if ($type === 'clock_out_time') {
-            $latestClockOut = $shiftEnd->copy()->addHours(5); // 5 jam setelah shift end
+            $latestClockOut = $shiftEnd->copy()->addMinutes($closeClockOut);
 
             if ($now->greaterThan($latestClockOut)) {
                 return redirect()->back()->with('error', 'Clock out sudah melewati batas maksimal 5 jam setelah shift berakhir.');

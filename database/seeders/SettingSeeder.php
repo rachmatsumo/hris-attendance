@@ -33,6 +33,30 @@ class SettingSeeder extends Seeder
                 'description' => 'Jumlah jam kerja per hari',
             ],
             [
+                'key' => 'open_clock_in',
+                'value' => '120',
+                'type' => 'integer',
+                'description' => 'Batas waktu absen masuk sebelum jam mulai kerja (menit)',
+            ],
+            [
+                'key' => 'close_clock_in',
+                'value' => '60',
+                'type' => 'integer',
+                'description' => 'Batas waktu absen masuk setelah lewat jam mulai kerja (menit)',
+            ],
+            [
+                'key' => 'open_clock_out',
+                'value' => '30',
+                'type' => 'integer',
+                'description' => 'Batas waktu absen pulang sebelum jam pulang kerja (menit)',
+            ],
+            [
+                'key' => 'close_clock_out',
+                'value' => '300',
+                'type' => 'integer',
+                'description' => 'Batas waktu absen pulang dari jam pulang kerja (menit)',
+            ],
+            [
                 'key' => 'overtime_rate',
                 'value' => '5000',
                 'type' => 'integer',
