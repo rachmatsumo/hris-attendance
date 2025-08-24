@@ -10,6 +10,17 @@
     justify-content: center;
     z-index: 9999;
     overflow: hidden;
+
+    /* background semi transparan */
+    background-color: rgba(0, 0, 0, 0.5);
+
+    /* efek blur */
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+
+    z-index: 9999;
+    color: #fff; /* supaya teks tetap jelas */
+    text-align: center;
 }
 
 /* Animasi loader */

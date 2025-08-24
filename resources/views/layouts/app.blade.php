@@ -59,6 +59,11 @@
    
 </head>
 <body>
+    <div id="loader-overlay">
+        <div class="spinner mb-2"></div> 
+        {{ config('app.description', 'Human Resources Information System') }}
+        <span>by {{ config('app.author', 'Abdul Rachmat') }}</span>
+    </div>
     <!-- Konten aplikasi Laravel -->
     <div id="app">
         <nav class="navbar navbar-top navbar-expand-md navbar-light bg-gradient-blue border-none">
@@ -201,6 +206,26 @@
     <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-messaging-compat.js"></script> 
     
+    <script>
+        const loader = document.getElementById("loader-overlay");
+        document.addEventListener("DOMContentLoaded", function () {
+            const path = window.location.pathname; 
+
+            if (path === "/" || path === "/dashboard" || path === "/home") {
+                setTimeout(function () {
+                    loader.style.display = "none";
+                    if (loader) {
+                        loader.style.display = "none";
+                    }
+                }, 1000);  
+            }else{
+                loader.style.display = "none";
+            }
+        });
+        $(document).on('click', '.bottom-bar .nav-link', function(){
+            loader.style.display = "flex";
+        })
+    </script>
     <!-- Service Worker Registration -->
     <script>
         firebase.initializeApp({
