@@ -3,7 +3,17 @@
 @section('content') 
 
 <div class="row">
-    <div class="col-md-4 col-lg-3 col-12 bg-gradient-blue py-4"> 
+    <div class="col-md-4 col-lg-3 col-12 bg-gradient-blue py-4 px-4"> 
+        <div class="d-flex justify-content-between py-2 w-100">
+            <div class="d-flex flex-column">
+                <h4>{{ @Auth::user()->name }}</h4>
+                <span class="fs-7">{{ @Auth::user()->position->name ?? '-' }} <br> {{ @Auth::user()->department->name ?? '-' }}</span>
+            </div>
+            <img src="{{ @Auth::user()->profile_photo 
+                ? asset('upload/avatar/' . @Auth::user()->profile_photo) 
+                : asset('upload/avatar/default.png') }}" 
+                class="avatar">
+        </div> 
         
         <form id="attendanceForm" action="{{ route('attendances.store') }}" method="POST" class="card p-4" enctype="multipart/form-data">
             @csrf

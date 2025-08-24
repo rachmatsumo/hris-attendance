@@ -70,7 +70,8 @@
     z-index: 1050;
 }
 body {
-    padding-top: var(--navbar-height, 140px);
+    padding-top: var(--navbar-height, 40px);
+    /* padding-top: var(--navbar-height, 140px); */
     /* padding-bottom: var(--navbar-height, 60px); */
 }
 .bottom-bar {

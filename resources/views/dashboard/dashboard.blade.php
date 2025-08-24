@@ -1,10 +1,20 @@
 @extends('layouts.app')
 
-@section('content')
-<div class="py-5 container">
+@section('content') 
 
-    <div class="row">
- 
+    <div class="row px-4">
+        <div class="col-12 py-4">
+            <div class="d-flex py-2 w-100">
+                <img src="{{ @Auth::user()->profile_photo 
+                    ? asset('upload/avatar/' . @Auth::user()->profile_photo) 
+                    : asset('upload/avatar/default.png') }}" 
+                    class="avatar me-2">
+                <div class="d-flex flex-column">
+                    <h4 class="mb-0">{{ @Auth::user()->name }}</h4>
+                    <span class="fs-7">{{ @Auth::user()?->position?->name }} <br> {{ @Auth::user()?->department?->name }}</span>
+                </div>
+            </div> 
+        </div> 
         <!-- Stats Cards --> 
         <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
             <div class="stat-card primary">
@@ -154,7 +164,6 @@
         @include('dashboard.partials.calendar', [ 'schedules'=>$schedules, 'dates'=>$dates ])
 
     </div>
-
-</div> 
+ 
 @endsection
 

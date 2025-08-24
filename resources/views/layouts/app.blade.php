@@ -68,7 +68,7 @@
     <div id="app">
         <nav class="navbar navbar-top navbar-expand-md navbar-light bg-gradient-blue border-none">
             <div class="container-fluid px-4 flex-column align-items-start">
-                <a class="navbar-brand text-white fs-6 mb-2 d-flex justify-content-between w-100" href="{{ url('/') }}">
+                <a class="navbar-brand text-white fs-6 mb-0 d-flex justify-content-between w-100" href="{{ url('/') }}">
                    {{ setting('company_name') }} - {{ config('app.name', 'Laravel') }}
                    <!-- Install PWA Button in Navbar -->
                    <button type="button" id="install-btn-nav" style="display: none;" class="btn btn-sm btn-light rounded-pill">
@@ -76,7 +76,7 @@
                    </button>
                 </a>
 
-                <div class="d-flex justify-content-between py-2 w-100">
+                {{-- <div class="d-flex justify-content-between py-2 w-100">
                     <div class="d-flex flex-column">
                         <h4>{{ @Auth::user()->name }}</h4>
                         <span class="fs-7">{{ @Auth::user()->position->name ?? '-' }} <br> {{ @Auth::user()->department->name ?? '-' }}</span>
@@ -85,7 +85,7 @@
                         ? asset('upload/avatar/' . @Auth::user()->profile_photo) 
                         : asset('upload/avatar/default.png') }}" 
                         class="avatar">
-                </div> 
+                </div>  --}}
             </div>
         </nav>
 
