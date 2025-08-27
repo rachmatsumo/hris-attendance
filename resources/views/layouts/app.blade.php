@@ -93,7 +93,7 @@
             <nav class="bottom-bar">
                 <div class="nav d-flex justify-content-around">
                     <a href="{{ url('/') }}" 
-                    class="nav-link {{ request()->routeIs('dashboard') || request()->is('/') ? 'active' : '' }}">
+                    class="nav-link {{ request()->routeIs('dashboard') || request()->routeIs('/') ? 'active' : '' }}">
                         <i class="bi bi-house-fill"></i>
                         <span>Home</span>
                     </a>
@@ -110,7 +110,21 @@
                     
                     @if(Auth::user()?->role=='admin' || Auth::user()?->role=='hr') 
                         <a href="{{ route('admin.index') }}" 
-                        class="nav-link {{ request()->routeIs('admin.*') ? 'active' : '' }}">
+                        class="nav-link {{ request()->routeIs('admin.*') || 
+                                        request()->routeIs('work-schedule.*') ||
+                                        request()->routeIs('location.*') ||
+                                        request()->routeIs('department.*') ||
+                                        request()->routeIs('user.*') ||
+                                        request()->routeIs('position.*') ||
+                                        request()->routeIs('holiday.*') ||
+                                        request()->routeIs('working-time.*') ||
+                                        request()->routeIs('setting.*') ||
+                                        request()->routeIs('level.*') ||
+                                        request()->routeIs('payroll-admin.*') ||
+                                        request()->routeIs('recap-attendance.*') ||
+                                        request()->routeIs('attendance-permit-admin.*')
+                                        
+                                        ? 'active' : '' }}">
                             <i class="bi bi-device-hdd"></i>
                             <span>Admin</span>
                         </a>

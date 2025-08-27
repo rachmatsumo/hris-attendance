@@ -14,7 +14,7 @@ use App\Http\Controllers\NotificationController;
 
 
 Route::get('/', [DashboardController::class, 'index'])->middleware('auth')->name('dashboard');
-Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('auth')->name('dashboard');
+// Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('auth');
 
 Route::middleware('auth')->group(function () {
     
