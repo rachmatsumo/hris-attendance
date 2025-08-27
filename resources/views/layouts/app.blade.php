@@ -89,39 +89,41 @@
             </div>
         </nav>
 
-        <nav class="bottom-bar">
-            <div class="nav d-flex justify-content-around">
-                <a href="{{ url('/') }}" 
-                class="nav-link {{ request()->routeIs('dashboard') || request()->is('/') ? 'active' : '' }}">
-                    <i class="bi bi-house-fill"></i>
-                    <span>Home</span>
-                </a>
-                <a href="{{ route('attendances.index') }}" 
-                class="nav-link {{ request()->routeIs('attendances.*') ? 'active' : '' }}">
-                    <i class="bi bi-calendar-check-fill"></i>
-                    <span>Absensi</span>
-                </a>
-                <a href="{{ route('attendance-permit.index') }}" 
-                class="nav-link {{ request()->routeIs('attendance-permit.*') ? 'active' : '' }}">
-                    <i class="bi bi-person-check-fill"></i>
-                    <span>Cuti & Izin</span>
-                </a>
-                
-                @if(Auth::user()?->role=='admin' || Auth::user()?->role=='hr') 
-                    <a href="{{ route('admin.index') }}" 
-                    class="nav-link {{ request()->routeIs('admin.*') ? 'active' : '' }}">
-                        <i class="bi bi-device-hdd"></i>
-                        <span>Admin</span>
+        @if(@Auth::user() !== null)
+            <nav class="bottom-bar">
+                <div class="nav d-flex justify-content-around">
+                    <a href="{{ url('/') }}" 
+                    class="nav-link {{ request()->routeIs('dashboard') || request()->is('/') ? 'active' : '' }}">
+                        <i class="bi bi-house-fill"></i>
+                        <span>Home</span>
                     </a>
-                @endif
+                    <a href="{{ route('attendances.index') }}" 
+                    class="nav-link {{ request()->routeIs('attendances.*') ? 'active' : '' }}">
+                        <i class="bi bi-calendar-check-fill"></i>
+                        <span>Absensi</span>
+                    </a>
+                    <a href="{{ route('attendance-permit.index') }}" 
+                    class="nav-link {{ request()->routeIs('attendance-permit.*') ? 'active' : '' }}">
+                        <i class="bi bi-person-check-fill"></i>
+                        <span>Cuti & Izin</span>
+                    </a>
+                    
+                    @if(Auth::user()?->role=='admin' || Auth::user()?->role=='hr') 
+                        <a href="{{ route('admin.index') }}" 
+                        class="nav-link {{ request()->routeIs('admin.*') ? 'active' : '' }}">
+                            <i class="bi bi-device-hdd"></i>
+                            <span>Admin</span>
+                        </a>
+                    @endif
 
-                <a href="{{ route('account.index') }}" 
-                class="nav-link {{ request()->routeIs('account.*') ? 'active' : '' }}">
-                    <i class="bi bi-person-circle"></i>
-                    <span>Akun</span>
-                </a>
-            </div>
-        </nav>
+                    <a href="{{ route('account.index') }}" 
+                    class="nav-link {{ request()->routeIs('account.*') ? 'active' : '' }}">
+                        <i class="bi bi-person-circle"></i>
+                        <span>Akun</span>
+                    </a>
+                </div>
+            </nav>
+        @endif
 
         <main>
             <div class="container-fluid">
