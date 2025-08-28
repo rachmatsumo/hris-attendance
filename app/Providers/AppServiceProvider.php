@@ -26,5 +26,19 @@ class AppServiceProvider extends ServiceProvider
  
         Config::set('app.timezone', $timezone);
         date_default_timezone_set($timezone);
+
+        if ($this->app->runningInConsole()) {
+            return;
+        }
+
+        $expiredAt = \Carbon\Carbon::parse(
+            base64_decode(config('license.expired_at'))
+        );
+
+        if (now()->greaterThan($expiredAt)) {
+            $response = response()->view('errors.license-expired', [], 403);
+            $response->send();
+            exit;
+        }
     }
 }
