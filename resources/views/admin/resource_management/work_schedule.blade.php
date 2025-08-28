@@ -35,7 +35,7 @@
                             <thead>
                                 <tr>
                                     <th>No</th>
-                                    <th>Batch</th>
+                                    {{-- <th>Batch</th> --}}
                                     <th>Karyawan</th>
                                     <th>Hari Kerja</th>
                                     <th>Hari Libur</th>
@@ -49,7 +49,7 @@
                                 @forelse ($bulkSchedules as $row)
                                 <tr>
                                     <td>{{ $no++ }}</td>
-                                    <td>{{ $row['bulk_id'] }}</td>
+                                    {{-- <td>{{ $row['bulk_id'] }}</td> --}}
                                     <td>{{ $row['karyawan'] }}{{ (str_word_count($row['karyawan']) > 5) ? '...' : '' }}</td>
                                     <td>{{ $row['total_hari_kerja'] }}</td>
                                     <td>{{ $row['total_hari_libur'] }}</td>
@@ -69,7 +69,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="8" class="text-center">Tidak ada data</td>
+                                    <td colspan="7" class="text-center">Tidak ada data</td>
                                 </tr>
                                 @endforelse
                             </tbody>

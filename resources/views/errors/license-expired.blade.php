@@ -9,7 +9,14 @@
 </head>
 <body>
     <h1>License Expired</h1>
-    <p>Masa uji coba aplikasi ini sudah habis.<br>
-    Silakan hubungi administrator untuk membeli lisensi.</p>
+    <p>
+        Masa penggunaan aplikasi ini telah berakhir.<br>
+        Silakan hubungi developer untuk membeli lisensi.
+    </p>
+    <p>
+        Whatsapp : 0813 4248 7857<br>
+        Email : idsumoblog@gmail.com
+    </p>
+    <a href="http://webkuy.com">Webkuy.com</a>
 </body>
 </html>
