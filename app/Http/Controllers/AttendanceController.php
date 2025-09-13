@@ -13,155 +13,175 @@ use App\Http\Controllers\NotificationController;
 
 class AttendanceController extends Controller
 {
-    public function index()
-    {
+    public function index() {
         $openClockIn = (INT) setting('open_clock_in', 120);
         $closeClockIn = (INT) setting('close_clock_in', 60);
-        
         $openClockOut = (INT) setting('open_clock_out', 30);
         $closeClockOut = (INT) setting('close_clock_out', 300);
-        
-
+    
         $attendances = Attendance::with('workSchedule')
-                    ->where('user_id', Auth::id())
-                    ->orderBy('date', 'desc')
-                    ->paginate(5);
-
+            ->where('user_id', Auth::id())
+            ->orderBy('date', 'desc')
+            ->paginate(5);
+    
         $locations = Location::where('is_active', true)->get();
-
         $now = Carbon::now();
-
+    
         // Ambil jadwal dari 2 hari sebelumnya hingga hari ini untuk mengcover shift malam
         $schedules = WorkSchedule::with('workingTime')
             ->where('user_id', Auth::id())
             ->whereIn('work_date', [
-                today()->subDays(2), 
-                today()->subDay(), 
+                today()->subDays(2),
+                today()->subDay(),
                 today()
             ])
             ->get();
-
+    
         // Cari shift yang sedang aktif berdasarkan waktu sekarang
         $activeShifts = $schedules->filter(function($schedule) use ($now, $openClockIn, $closeClockOut) {
             if (!$schedule->workingTime) return false;
-
+    
             $shiftStart = Carbon::parse($schedule->workingTime->start_time)
-                                ->setDateFrom($schedule->work_date);
+                ->setDateFrom($schedule->work_date);
             $shiftEnd = Carbon::parse($schedule->workingTime->end_time)
-                                ->setDateFrom($schedule->work_date);
-
+                ->setDateFrom($schedule->work_date);
+    
             if ($schedule->workingTime->end_next_day) {
                 $shiftEnd->addDay();
             }
-
+    
+            // PERBAIKAN: Cek apakah user sudah clock out untuk shift ini
+            $hasClockOut = Attendance::where('user_id', Auth::id())
+                ->where('work_schedule_id', $schedule->id)
+                ->whereNotNull('clock_out_time')
+                ->exists();
+    
+            // Jika sudah clock out, shift ini tidak aktif lagi
+            if ($hasClockOut) {
+                return false;
+            }
+    
+            // PERBAIKAN: Batasi window clock out maksimal 24 jam setelah shift berakhir
+            // $maxClockOutTime = $shiftEnd->copy()->addHours(24);
+            
+            // // Jika sudah lebih dari 24 jam setelah shift berakhir, anggap tidak aktif
+            // if ($now->gt($maxClockOutTime)) {
+            //     return false;
+            // }
+    
             // Extended window untuk absensi
             $clockInStart = $shiftStart->copy()->subMinutes($openClockIn);
             $clockOutEnd = $shiftEnd->copy()->addMinutes($closeClockOut);
-
+    
             return $now->between($clockInStart, $clockOutEnd);
         });
 
-        // Prioritaskan shift yang sedang berlangsung, bukan yang akan datang
         $currentlyRunning = $activeShifts->filter(function($schedule) use ($now) {
             $shiftStart = Carbon::parse($schedule->workingTime->start_time)
-                                ->setDateFrom($schedule->work_date);
+                ->setDateFrom($schedule->work_date);
             $shiftEnd = Carbon::parse($schedule->workingTime->end_time)
-                                ->setDateFrom($schedule->work_date);
-            
+                ->setDateFrom($schedule->work_date);
+    
             if ($schedule->workingTime->end_next_day) {
                 $shiftEnd->addDay();
             }
-
+    
             return $now->between($shiftStart, $shiftEnd);
         });
-
-        // Jika ada shift yang sedang berlangsung, gunakan itu
-        if ($currentlyRunning->isNotEmpty()) {
+    
+        // PERBAIKAN: Prioritaskan shift hari ini jika ada
+        $todayShifts = $activeShifts->filter(function($schedule) {
+            return Carbon::parse($schedule->work_date)->isToday();
+        });
+    
+        // Logika pemilihan active shift
+        if ($todayShifts->isNotEmpty()) {
+            // Prioritas 1: Shift hari ini yang sedang berlangsung
+            $todayRunning = $todayShifts->filter(function($schedule) use ($now) {
+                $shiftStart = Carbon::parse($schedule->workingTime->start_time)
+                    ->setDateFrom($schedule->work_date);
+                $shiftEnd = Carbon::parse($schedule->workingTime->end_time)
+                    ->setDateFrom($schedule->work_date);
+    
+                if ($schedule->workingTime->end_next_day) {
+                    $shiftEnd->addDay();
+                }
+    
+                return $now->between($shiftStart, $shiftEnd);
+            });
+    
+            if ($todayRunning->isNotEmpty()) {
+                $activeShift = $todayRunning->first();
+            } else {
+                // Prioritas 2: Shift hari ini yang terdekat
+                $activeShift = $todayShifts->sortBy(function($schedule) use ($now) {
+                    $shiftStart = Carbon::parse($schedule->workingTime->start_time)
+                        ->setDateFrom($schedule->work_date);
+                    return abs($now->diffInMinutes($shiftStart));
+                })->first();
+            }
+        } elseif ($currentlyRunning->isNotEmpty()) {
+            // Prioritas 3: Shift yang sedang berlangsung dari hari lain
             $activeShift = $currentlyRunning->first();
         } else {
-            // Jika tidak ada yang sedang berlangsung, cari yang paling dekat
+            // Prioritas 4: Shift aktif yang paling dekat
             $activeShift = $activeShifts->sortBy(function($schedule) use ($now) {
                 $shiftStart = Carbon::parse($schedule->workingTime->start_time)
-                                    ->setDateFrom($schedule->work_date);
-                
+                    ->setDateFrom($schedule->work_date);
                 return abs($now->diffInMinutes($shiftStart));
             })->first();
         }
-
-        // Fallback: jika masih tidak ada, ambil shift terdekat dari semua jadwal
+    
+        // Fallback: jika masih tidak ada, ambil shift terdekat dari semua jadwal hari ini atau masa depan
         if (!$activeShift) {
-            $activeShift = $schedules->sortBy(function($schedule) use ($now) {
-                if (!$schedule->workingTime) return PHP_INT_MAX;
-
-                $shiftStart = Carbon::parse($schedule->workingTime->start_time)
-                                    ->setDateFrom($schedule->work_date);
-                
-                return abs($now->diffInMinutes($shiftStart));
-            })->first();
+            $activeShift = $schedules->filter(function($schedule) {
+                $workDate = Carbon::parse($schedule->work_date);
+                return $workDate->isToday() || $workDate->isFuture();
+            })->sortBy('work_date')->first();
         }
-
+    
         // Cari shift untuk display (prioritas shift hari ini atau yang akan datang)
         $displayShift = $schedules->filter(function($schedule) use ($now) {
             $workDate = Carbon::parse($schedule->work_date);
             return $workDate->isToday() || $workDate->isFuture();
         })->sortBy('work_date')->first();
-
+    
         // Jika tidak ada shift hari ini/masa depan, gunakan active shift
         if (!$displayShift) {
             $displayShift = $activeShift;
         }
-
+    
         $clockInWindow = null;
         $clockOutWindow = null;
-
+    
         // Gunakan activeShift untuk window absensi, displayShift untuk tampilan jadwal
         if ($activeShift && $activeShift->workingTime) {
             $shiftStart = Carbon::parse($activeShift->workingTime->start_time)
-                                ->setDateFrom($activeShift->work_date);
+                ->setDateFrom($activeShift->work_date);
             $shiftEnd = Carbon::parse($activeShift->workingTime->end_time)
-                                ->setDateFrom($activeShift->work_date);
-            
+                ->setDateFrom($activeShift->work_date);
+    
             if ($activeShift->workingTime->end_next_day) {
                 $shiftEnd->addDay();
             }
-
+    
             $clockInWindow = [
                 'start' => $shiftStart->copy()->subMinutes($openClockIn)->toISOString(),
                 'end' => $shiftStart->copy()->addMinutes($closeClockIn)->toISOString(),
             ];
-            
+    
             $clockOutWindow = [
                 'start' => $shiftEnd->copy()->subMinutes($openClockOut)->toISOString(),
                 'end' => $shiftEnd->copy()->addMinutes($closeClockOut)->toISOString(),
             ];
         }
-
-        // Untuk debugging - bisa dihapus setelah testing
-        // dd([
-        //     'now' => $now->toDateTimeString(),
-        //     'activeShift' => $activeShift ? [
-        //         'date' => Carbon::parse($activeShift->work_date)->toDateString(),
-        //         'time' => $activeShift->workingTime->start_time . ' - ' . $activeShift->workingTime->end_time,
-        //         'end_next_day' => $activeShift->workingTime->end_next_day ?? false
-        //     ] : null,
-        //     'displayShift' => $displayShift ? [
-        //         'date' => Carbon::parse($displayShift->work_date)->toDateString(), 
-        //         'time' => $displayShift->workingTime->start_time . ' - ' . $displayShift->workingTime->end_time
-        //     ] : null,
-        //     'clockInWindow' => $clockInWindow,
-        //     'clockOutWindow' => $clockOutWindow,
-        //     'schedules' => $schedules->map(fn($s) => [
-        //         'date' => Carbon::parse($s->work_date)->toDateString(),
-        //         'time' => $s->workingTime->start_time . ' - ' . $s->workingTime->end_time,
-        //         'end_next_day' => $s->workingTime->end_next_day ?? false
-        //     ])
-        // ]);
-
+    
+        // Return response atau view dengan data yang diperlukan
         return view('attendances.attendance', compact(
-            'attendances', 
-            'activeShift',        // Untuk window absensi (shift yang sedang berlangsung)
-            'displayShift',       // Untuk tampilan jadwal (shift hari ini/akan datang) 
+            'attendances',
             'locations',
+            'activeShift',
+            'displayShift',
             'clockInWindow',
             'clockOutWindow'
         ));
